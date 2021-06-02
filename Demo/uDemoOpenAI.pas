@@ -55,11 +55,14 @@ type
       SpeedButton2: TSpeedButton;
       Label1: TLabel;
       SpeedButton3: TSpeedButton;
+      Button1: TButton;
       procedure FormCreate(Sender: TObject);
       procedure FormDestroy(Sender: TObject);
       procedure SpeedButton1Click(Sender: TObject);
       procedure SpeedButton2Click(Sender: TObject);
+      procedure Button1Click(Sender: TObject);
    private
+      procedure PrepareCompletions;
       { Private declarations }
    public
       { Public declarations }
@@ -129,18 +132,41 @@ end;
 
 // Ref: https://beta.openai.com/docs/api-reference/completions/create
 procedure TfrmDemoOpenAI.SpeedButton2Click(Sender: TObject);
+begin
+
+   OpenAI.RequestType := rCompletions;
+end;
+
+procedure TfrmDemoOpenAI.PrepareCompletions;
 var
    Completions: TCompletions;
 begin
+   if Edit1.Text.IsEmpty then
+   begin
+      ShowMessage('A prompt text must be supplied');
+      Exit;
+   end;
 
    Completions := TCompletions.Create;
    Completions.MaxTokens := 5;
    Completions.SamplingTemperature := 1; // Default 1
    Completions.NucleusSampling := 1; // top_p
+   Completions.Stop := ['\n'];
+   Completions.Prompt := Edit1.Text;
+   Completions.LogProbabilities := -1; // -1 will render as null default
 
    OpenAI.RequestType := rCompletions;
+   OpenAI.Completions := Completions;
    OpenAI.Execute;
 
+end;
+
+procedure TfrmDemoOpenAI.Button1Click(Sender: TObject);
+begin
+   case OpenAI.RequestType of
+      rCompletions:
+         PrepareCompletions();
+   end;
 end;
 
 end.

@@ -25,7 +25,8 @@ uses
    FireDAC.Stan.Option, FireDAC.Stan.Param, FireDAC.Stan.Error, REST.Response.Adapter,
    FireDAC.DatS, FireDAC.Phys.Intf, FireDAC.DApt.Intf, System.StrUtils, System.Generics.Collections,
    Data.DB, FireDAC.Comp.DataSet, FireDAC.Comp.Client, System.Types,
-   System.IOUtils, System.TypInfo, System.JSON;
+   System.IOUtils, System.TypInfo, System.JSON,
+   MLOpenAI.Completions;
 
 const
    OAI_GET_ENGINES = '/engines';
@@ -68,11 +69,17 @@ type
       FRESTResponse: TRESTResponse;
       FMemtable: TFDMemTable;
       FRESTResponseDataSetAdapter: TRESTResponseDataSetAdapter;
+      FCompletions: TCompletions;
       procedure readEngines;
       procedure SetEndPoint(const Value: String);
       procedure SetApiKey(const Value: string);
       procedure SetOrganization(const Value: String);
       procedure SetEngine(const Value: TOAIEngine);
+      procedure SetCompletions(const Value: TCompletions);
+      procedure CreateRESTRespose;
+      procedure CreateRESTClient;
+      procedure CreateRESTRequest;
+      procedure CreateCompletions;
    public
       constructor Create(var MemTable: TFDMemTable);
       destructor Destroy; Override;
@@ -91,39 +98,38 @@ type
       property APIKey: String write SetApiKey;
       property AvailableEngines: TDictionary<String, String> read FEnginesList;
       property RequestType: TOAIRequests read FRequestType write FRequestType;
+      property Completions: TCompletions write SetCompletions;
    end;
 
 implementation
 
-uses
-   MLOpenAI.Completions;
-
 { TOpenAI }
 
-constructor TOpenAI.Create(var MemTable: TFDMemTable);
+procedure TOpenAI.CreateRESTRespose;
 begin
-   FErrorMessage := '';
-   FOnResponse := nil;
-   FMemtable := MemTable;
-   //
    FAcceptType := 'application/json'; // 'application/json, text/plain; q=0.9, text/html;q=0.8,';
    FContentType := 'application/json';
    FRESTResponse := TRESTResponse.Create(nil);
    FRESTResponse.Name := '_restresponse';
    FRESTResponse.ContentType := FContentType;
    //
-   //
    FRESTResponseDataSetAdapter := TRESTResponseDataSetAdapter.Create(nil);
-   FRESTResponseDataSetAdapter.DataSet := MemTable;
+   FRESTResponseDataSetAdapter.DataSet := FMemtable;
    FRESTResponseDataSetAdapter.Response := FRESTResponse;
-   // Client
+end;
+
+procedure TOpenAI.CreateRESTClient;
+begin
    FRESTClient := TRESTClient.Create(nil);
    FRESTClient.AcceptCharset := 'UTF-8';
    FRESTClient.UserAgent := 'MLOAIClient';
    FRESTClient.Accept := FAcceptType;
    FRESTClient.ContentType := FContentType;
    FRESTClient.OnHTTPProtocolError := HttpError;
-   // Request
+end;
+
+procedure TOpenAI.CreateRESTRequest;
+begin
    FRESTRequest := TRESTRequestOAI.Create(nil);
    FRESTRequest.AcceptCharset := 'UTF-8';
    FRESTRequest.Accept := FAcceptType;
@@ -136,6 +142,19 @@ begin
    FRESTRequest.FRequestType := TOAIRequests.rCustom;
 end;
 
+constructor TOpenAI.Create(var MemTable: TFDMemTable);
+begin
+   FErrorMessage := '';
+   FOnResponse := nil;
+   FMemtable := MemTable;
+   //
+   CreateRESTRespose();
+   // Client
+   CreateRESTClient();
+   // Request
+   CreateRESTRequest();
+end;
+
 destructor TOpenAI.Destroy;
 begin
    FRESTResponse.Free;
@@ -143,13 +162,6 @@ begin
    FRESTClient.Free;
    FRESTResponseDataSetAdapter.Free;
    inherited Destroy;
-end;
-
-procedure TOpenAI.Execute;
-begin
-   FRESTRequest.ClearBody;
-   FRESTRequest.Body.Add(FPayload, TRESTContentType.ctAPPLICATION_JSON);
-   FRESTRequest.Execute;
 end;
 
 procedure TOpenAI.HttpError(Sender: TCustomRESTClient);
@@ -235,12 +247,40 @@ begin
    FRESTRequest.Params.ParameterByName('Authorization').Options := [poDoNotEncode];
 end;
 
+procedure TOpenAI.SetCompletions(const Value: TCompletions);
+begin
+   FCompletions := Value;
+end;
+
+procedure TOpenAI.Execute;
+begin
+   // FRESTRequest.ClearBody;
+   // FRESTRequest.Body.Add(FPayload, TRESTContentType.ctAPPLICATION_JSON);
+   // FRESTRequest.Execute;
+   case FRequestType of
+      rCompletions:
+         CreateCompletions();
+   end;
+end;
+
 procedure TOpenAI.GetEngines;
 begin
    Self.RequestType := rEngines;
    FRESTRequest.FRequestType := rEngines;
    FRESTRequest.Method := TRESTRequestMethod.rmGET;
    FRESTRequest.Resource := OAI_GET_ENGINES;
+   FRESTRequest.Execute;
+end;
+
+procedure TOpenAI.CreateCompletions;
+var
+   APayLoad: String;
+begin
+   FRESTRequest.ClearBody;
+
+   { TODO : Preencher parametros }
+
+   FRESTRequest.Body.Add(APayLoad, TRESTContentType.ctAPPLICATION_JSON);
    FRESTRequest.Execute;
 end;
 

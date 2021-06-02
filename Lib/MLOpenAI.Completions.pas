@@ -24,6 +24,8 @@ uses
 
 type
    TCompletions = class
+
+   private
       FPrompt: String;
       FMaxTokens: Integer;
       FSamplingTemperature: Single;
@@ -34,7 +36,6 @@ type
       FStop: TArray<String>;
       FPresencePenalty: Integer;
       FBestOf: Integer;
-   private
       procedure SetMaxTokens(const Value: Integer);
       procedure SetPrompt(const Value: String);
       procedure SetSamplingTemperature(const Value: Single);
@@ -62,7 +63,7 @@ implementation
 
 { TCompletion }
 
-(* logit_bias and stream are not implemented *)
+(* logit_bias and stream are not yet implemented *)
 
 // max_tokens integer Optional Defaults to 16
 procedure TCompletions.SetMaxTokens(const Value: Integer);
@@ -94,11 +95,14 @@ begin
    FSamplingTemperature := Value;
 end;
 
+// stop string or array Optional Defaults to null
 procedure TCompletions.SetStop(const Value: TArray<String>);
 begin
    FStop := Value;
 end;
 
+// logprobs integer Optional Defaults to null
+// setting -1 will render as null default
 procedure TCompletions.SetLogProbabilities(const Value: Integer);
 begin
    FLogProbabilities := Value;
