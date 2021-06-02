@@ -21,7 +21,7 @@ Simple example of use:
 Initialize the wrapper:
 ```delphi
 // Store your key safely. Never share or expose it!
-procedure TDemoOpenAI.InitOpenAI;
+procedure TfrmDemoOpenAI.InitOpenAI;
 begin
   OpenAIKey := TFile.ReadAllText(API_KEY);
   OpenAI := TOpenAI.Create(FDMemTable1);
@@ -34,7 +34,7 @@ end;
 
 Example on how to create an completion:
 ```pascal
-procedure TDemoOpenAI.CreateCompletions;
+procedure TfrmDemoOpenAI.CreateCompletions;
 var
    Completions: TCompletions;
 begin
