@@ -3,7 +3,7 @@ program DemoOpenAI;
 uses
   System.StartUpCopy,
   FMX.Forms,
-  uDemoOpenAI in 'uDemoOpenAI.pas' {Form1},
+  uDemoOpenAI in 'uDemoOpenAI.pas' {frmDemoOpenAI},
   MLOpenAI.Completions in '..\Lib\MLOpenAI.Completions.pas',
   MLOpenAI.Core in '..\Lib\MLOpenAI.Core.pas';
 
@@ -11,6 +11,6 @@ uses
 
 begin
   Application.Initialize;
-  Application.CreateForm(TForm1, Form1);
+  Application.CreateForm(TfrmDemoOpenAI, frmDemoOpenAI);
   Application.Run;
 end.

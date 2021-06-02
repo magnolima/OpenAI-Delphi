@@ -405,7 +405,7 @@
             <MainSource>MainSource</MainSource>
         </DelphiCompile>
         <DCCReference Include="uDemoOpenAI.pas">
-            <Form>Form1</Form>
+            <Form>frmDemoOpenAI</Form>
             <FormType>fmx</FormType>
         </DCCReference>
         <DCCReference Include="..\Lib\MLOpenAI.Completions.pas"/>

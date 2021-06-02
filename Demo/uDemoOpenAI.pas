@@ -40,7 +40,7 @@ const
    OpenAI_PATH = 'https://api.openai.com/v1';
 
 type
-   TForm1 = class(TForm)
+   TfrmDemoOpenAI = class(TForm)
       ToolBar1: TToolBar;
       SpeedButton1: TSpeedButton;
       Edit1: TEdit;
@@ -67,8 +67,8 @@ type
    end;
 
 var
-   Form1: TForm1;
-   OAIKey: String;
+   frmDemoOpenAI: TfrmDemoOpenAI;
+   OpenAIKey: String;
 
 implementation
 
@@ -80,14 +80,15 @@ var
 
 {$R *.fmx}
 
-procedure TForm1.FormCreate(Sender: TObject);
+procedure TfrmDemoOpenAI.FormCreate(Sender: TObject);
 begin
    if FileExists(API_KEY) then
    begin
-      OAIKey := TFile.ReadAllText(API_KEY);
+      // Store your key safely. Never share or expose it!
+      OpenAIKey := TFile.ReadAllText(API_KEY);
 
       OpenAI := TOpenAI.Create(FDMemTable1);
-      OpenAI.APIKey := OAIKey;
+      OpenAI.APIKey := OpenAIKey;
       OpenAI.Endpoint := OpenAI_PATH;
       OpenAI.Engine := TOAIEngine.engDavinci;
 
@@ -97,12 +98,12 @@ begin
       ShowMessage('Api key file not found');
 end;
 
-procedure TForm1.FormDestroy(Sender: TObject);
+procedure TfrmDemoOpenAI.FormDestroy(Sender: TObject);
 begin
    OpenAI.DisposeOf;
 end;
 
-procedure TForm1.OnOpenAIResponse(Sender: TObject);
+procedure TfrmDemoOpenAI.OnOpenAIResponse(Sender: TObject);
 var
    Engine: String;
 begin
@@ -121,13 +122,13 @@ begin
 
 end;
 
-procedure TForm1.SpeedButton1Click(Sender: TObject);
+procedure TfrmDemoOpenAI.SpeedButton1Click(Sender: TObject);
 begin
    OpenAI.GetEngines;
 end;
 
 // Ref: https://beta.openai.com/docs/api-reference/completions/create
-procedure TForm1.SpeedButton2Click(Sender: TObject);
+procedure TfrmDemoOpenAI.SpeedButton2Click(Sender: TObject);
 var
    Completions: TCompletions;
 begin
