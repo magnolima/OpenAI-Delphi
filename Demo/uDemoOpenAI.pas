@@ -62,7 +62,7 @@ type
       procedure SpeedButton2Click(Sender: TObject);
       procedure Button1Click(Sender: TObject);
    private
-      procedure PrepareCompletions;
+      procedure InitCompletions;
       { Private declarations }
    public
       { Public declarations }
@@ -137,9 +137,10 @@ begin
    OpenAI.RequestType := rCompletions;
 end;
 
-procedure TfrmDemoOpenAI.PrepareCompletions;
+procedure TfrmDemoOpenAI.InitCompletions;
 var
-   Completions: TCompletions;
+   ACompletions: TCompletions;
+   i:integer;
 begin
    if Edit1.Text.IsEmpty then
    begin
@@ -147,16 +148,16 @@ begin
       Exit;
    end;
 
-   Completions := TCompletions.Create;
-   Completions.MaxTokens := 5;
-   Completions.SamplingTemperature := 1; // Default 1
-   Completions.NucleusSampling := 1; // top_p
-   Completions.Stop := ['\n'];
-   Completions.Prompt := Edit1.Text;
-   Completions.LogProbabilities := -1; // -1 will render as null default
+   ACompletions := TCompletions.Create;
+   ACompletions.MaxTokens := 5;
+   ACompletions.SamplingTemperature := 1; // Default 1
+   ACompletions.TopP := 1;
+   ACompletions.Stop := ['\n'];
+   ACompletions.Prompt := Edit1.Text;
+   ACompletions.LogProbabilities := -1; // -1 will set as null default
 
    OpenAI.RequestType := rCompletions;
-   OpenAI.Completions := Completions;
+   OpenAI.Completions := ACompletions;
    OpenAI.Execute;
 
 end;
@@ -165,7 +166,7 @@ procedure TfrmDemoOpenAI.Button1Click(Sender: TObject);
 begin
    case OpenAI.RequestType of
       rCompletions:
-         PrepareCompletions();
+         InitCompletions();
    end;
 end;
 

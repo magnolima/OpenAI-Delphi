@@ -20,16 +20,15 @@ unit MLOpenAI.Completions;
 interface
 
 uses
-   System.StrUtils;
+   System.SysUtils, REST.Client, REST.Types, System.JSON;
 
 type
    TCompletions = class
-
    private
       FPrompt: String;
       FMaxTokens: Integer;
       FSamplingTemperature: Single;
-      FNucleusSampling: Single;
+      FTopP: Single;
       FNumberOfCompletions: Integer;
       FLogProbabilities: Integer;
       FEcho: Boolean;
@@ -47,16 +46,18 @@ type
       procedure SetPresencePenalty(const Value: Integer);
       procedure SetBestOf(const Value: Integer);
    public
+      constructor Create;
       property Prompt: String write SetPrompt;
       property MaxTokens: Integer write SetMaxTokens;
       property SamplingTemperature: Single write SetSamplingTemperature;
-      property NucleusSampling: Single write SetNucleusSampling;
+      property TopP: Single write SetNucleusSampling;
       property NumberOfCompletions: Integer write SetNumberOfCompletions;
       property LogProbabilities: Integer write SetLogProbabilities;
       property Echo: Boolean write SetEcho;
       property Stop: TArray<String> write SetStop;
       property PresencePenalty: Integer write SetPresencePenalty;
       property BestOf: Integer write SetBestOf;
+      procedure CreateCompletion(ABody: TCustomRESTRequest.TBody);
    end;
 
 implementation
@@ -74,7 +75,7 @@ end;
 // top_p number Optional Defaults to 1
 procedure TCompletions.SetNucleusSampling(const Value: Single);
 begin
-   FNucleusSampling := Value;
+   FTopP := Value;
 end;
 
 // n integer Optional Defaults to 1
@@ -124,6 +125,61 @@ end;
 procedure TCompletions.SetBestOf(const Value: Integer);
 begin
    FBestOf := Value;
+end;
+
+constructor TCompletions.Create;
+begin
+   // Set defaults
+   FPrompt := '';
+   FMaxTokens := 16;
+   FSamplingTemperature := 1;
+   TopP := 1;
+   FNumberOfCompletions := 1;
+   // FStream := False;
+   FLogProbabilities := 1;
+   FEcho := false;
+   FStop := nil;
+   FPresencePenalty := 0;
+   FBestOf := 1;
+   // logit_bias = nil
+end;
+
+procedure TCompletions.CreateCompletion(ABody: TCustomRESTRequest.TBody);
+var
+   AJSONObject: TJSONObject;
+   AJSONPair: TJSONPair;
+   AParams: TCustomRESTRequest.TBody;
+   Value, Stop: String;
+begin
+   // "prompt": "Once upon a time",
+   // "max_tokens": 5,
+   // "temperature": 1,
+   // "top_p": 1,
+   // "n": 1,
+   // "stream": false,
+   // "logprobs": null,
+   // "stop": "\n"
+
+   AJSONObject := TJSONObject.Create;
+   AJSONObject.AddPair(TJSONPair.Create('prompt', FPrompt));
+   if FMaxTokens <> 16 then
+      AJSONObject.AddPair(TJSONPair.Create('max_tokens', TJSONNumber.Create(FMaxTokens)));
+   if FSamplingTemperature <> 1 then
+      AJSONObject.AddPair(TJSONPair.Create('temperature', TJSONNumber.Create(FSamplingTemperature)));
+   if FTopP <> 1 then
+      AJSONObject.AddPair(TJSONPair.Create('top_p', TJSONNumber.Create(FTopP)));
+   if FNumberOfCompletions <> 1 then
+      AJSONObject.AddPair(TJSONPair.Create('n', TJSONNumber.Create(FNumberOfCompletions)));
+   for Stop in FStop do
+      AJSONObject.AddPair(TJSONPair.Create('stop', Stop));
+   if FLogProbabilities = -1 then
+      AJSONObject.AddPair(TJSONPair.Create('logprobs', 'null'))
+   else
+      AJSONObject.AddPair(TJSONPair.Create('logprobs', TJSONNumber.Create(FLogProbabilities)));
+
+   AJSONObject.AddPair(TJSONPair.Create('stream', 'false')); // not implemented
+   ABody.Add(AJSONObject.ToJSON, TRESTContentType.ctAPPLICATION_JSON);
+
 end;
 
 end.

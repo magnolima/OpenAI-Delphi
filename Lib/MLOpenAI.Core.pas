@@ -55,7 +55,6 @@ type
       FContentType: String;
       FEndpoint: String;
       FResource: String;
-      FPayload: String;
       FErrorMessage: String;
       FEngine: TOAIEngine;
       FRequestType: TOAIRequests;
@@ -79,7 +78,7 @@ type
       procedure CreateRESTRespose;
       procedure CreateRESTClient;
       procedure CreateRESTRequest;
-      procedure CreateCompletions;
+      procedure ExecuteCompletions;
    public
       constructor Create(var MemTable: TFDMemTable);
       destructor Destroy; Override;
@@ -259,7 +258,7 @@ begin
    // FRESTRequest.Execute;
    case FRequestType of
       rCompletions:
-         CreateCompletions();
+         ExecuteCompletions();
    end;
 end;
 
@@ -272,16 +271,16 @@ begin
    FRESTRequest.Execute;
 end;
 
-procedure TOpenAI.CreateCompletions;
-var
-   APayLoad: String;
+procedure TOpenAI.ExecuteCompletions;
 begin
    FRESTRequest.ClearBody;
 
-   { TODO : Preencher parametros }
-
-   FRESTRequest.Body.Add(APayLoad, TRESTContentType.ctAPPLICATION_JSON);
-   FRESTRequest.Execute;
+   // JSON should go into the body
+   Self.FCompletions.CreateCompletion(FRESTRequest.Body);
+//    FRESTRequest.
+ //  FRESTRequest.Body.Add(APayLoad, TRESTContentType.ctAPPLICATION_JSON);
+   FRESTRequest.Method := TRESTRequestMethod.rmPOST;
+   // FRESTRequest.Execute;
 end;
 
 end.
