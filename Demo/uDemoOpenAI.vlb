@@ -18,11 +18,8 @@ Coordinates=99,77,89,36
 Coordinates=10,10,99,36
 Visible=False
 
-[Edit1]
-Coordinates=10,78,44,58
-
 []
-Coordinates=58,173,91,36
+Coordinates=10,78,44,58
 
 [BindSourceDB1]
 Coordinates=250,10,106,80

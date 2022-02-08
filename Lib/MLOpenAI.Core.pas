@@ -20,85 +20,96 @@ unit MLOpenAI.Core;
 interface
 
 uses
-   System.Diagnostics, System.Classes, System.SysUtils, Data.Bind.Components,
-   Winapi.Windows, Data.Bind.ObjectScope, REST.Client, REST.Types, FireDAC.Stan.Intf,
-   FireDAC.Stan.Option, FireDAC.Stan.Param, FireDAC.Stan.Error, REST.Response.Adapter,
-   FireDAC.DatS, FireDAC.Phys.Intf, FireDAC.DApt.Intf, System.StrUtils, System.Generics.Collections,
-   Data.DB, FireDAC.Comp.DataSet, FireDAC.Comp.Client, System.Types,
-   System.IOUtils, System.TypInfo, System.JSON,
-   MLOpenAI.Completions;
+  System.Diagnostics, System.Classes, System.SysUtils, Data.Bind.Components,
+  Winapi.Windows, Data.Bind.ObjectScope, REST.Client, REST.Types,
+  FireDAC.Stan.Intf,
+  FireDAC.Stan.Option, FireDAC.Stan.Param, FireDAC.Stan.Error,
+  REST.Response.Adapter,
+  FireDAC.DatS, FireDAC.Phys.Intf, FireDAC.DApt.Intf, System.StrUtils,
+  System.Generics.Collections,
+  Data.DB, FireDAC.Comp.DataSet, FireDAC.Comp.Client, System.Types,
+  System.IOUtils, System.TypInfo, System.JSON,
+  MLOpenAI.Completions;
 
 const
-   OAI_GET_ENGINES = '/engines';
-   OAI_GET_COMPLETION = '/completions';
-   OAI_SEARCH = '/search';
-   OAI_CLASSIFICATIONS = '/classifications';
-   OAI_ANSWER = '/answers';
-   OAI_FILES = '/files';
+  OAI_GET_ENGINES = '/engines';
+  OAI_GET_COMPLETION = '/completions';
+  OAI_SEARCH = '/search';
+  OAI_CLASSIFICATIONS = '/classifications';
+  OAI_ANSWER = '/answers';
+  OAI_FILES = '/files';
+  TOAIEngineName: TArray<String> = ['text-davinci-001', 'text-curie-001',
+    'text-babbage-001', 'text-ada-001', 'davinci', 'curie', 'babbage', 'ada'];
 
 type
-   TOAIEngine = (engDavinci, engCurie, engBabbage, engAda);
-   TOAIRequests = (rCustom, rAuth, rEngines, rCompletions, rSearch, rClassifications, rAnswers, rFiles);
+  TOAIEngine = (egTextDavinci001, egTextCurie001, egTextBabbage001,
+    egTextAda001, egDavinci, egCurie, egBabbage, egAda);
+  TOAIRequests = (orNone, rAuth, orEngines, orCompletions, orSearch,
+    rClassifications, orAnswers, orFiles);
 
 type
-   TRESTRequestOAI = class(TRESTRequest)
-   private
-      FRequestType: TOAIRequests;
-      property RequestType: TOAIRequests read FRequestType write FRequestType;
-   end;
+  TRESTRequestOAI = class(TRESTRequest)
+  private
+    FRequestType: TOAIRequests;
+    property RequestType: TOAIRequests read FRequestType write FRequestType;
+  end;
 
+  // Maybe now, we could use advanced class-like record here instead of class
 type
-   TOpenAI = class(TObject)
-   private
-      //
-      FAcceptType: String;
-      FContentType: String;
-      FEndpoint: String;
-      FResource: String;
-      FErrorMessage: String;
-      FEngine: TOAIEngine;
-      FRequestType: TOAIRequests;
-      FEnginesList: TDictionary<String, String>;
-      FOnResponse: TNotifyEvent;
-      FOnError: TNotifyEvent;
-      FAPIKey: String;
-      FOrganization: String;
-      FRESTRequest: TRESTRequestOAI;
-      FRESTClient: TRESTClient;
-      FRESTResponse: TRESTResponse;
-      FMemtable: TFDMemTable;
-      FRESTResponseDataSetAdapter: TRESTResponseDataSetAdapter;
-      FCompletions: TCompletions;
-      procedure readEngines;
-      procedure SetEndPoint(const Value: String);
-      procedure SetApiKey(const Value: string);
-      procedure SetOrganization(const Value: String);
-      procedure SetEngine(const Value: TOAIEngine);
-      procedure SetCompletions(const Value: TCompletions);
-      procedure CreateRESTRespose;
-      procedure CreateRESTClient;
-      procedure CreateRESTRequest;
-      procedure ExecuteCompletions;
-   public
-      constructor Create(var MemTable: TFDMemTable);
-      destructor Destroy; Override;
-      procedure HttpError(Sender: TCustomRESTClient);
-      property ErrorMessage: String read FErrorMessage;
-   published
-      procedure AfterExecute(Sender: TCustomRESTRequest);
-      procedure Execute;
-      procedure Stop;
-      procedure GetEngines;
-      property OnResponse: TNotifyEvent read FOnResponse write FOnResponse;
-      property OnError: TNotifyEvent read FOnError write FOnError;
-      property Engine: TOAIEngine read FEngine write SetEngine;
-      property Endpoint: String read FEndpoint write SetEndPoint;
-      property Organization: String read FOrganization write SetOrganization;
-      property APIKey: String write SetApiKey;
-      property AvailableEngines: TDictionary<String, String> read FEnginesList;
-      property RequestType: TOAIRequests read FRequestType write FRequestType;
-      property Completions: TCompletions write SetCompletions;
-   end;
+  TOpenAI = class(TObject)
+  private
+    //
+    FAcceptType: String;
+    FContentType: String;
+    FEndpoint: String;
+    FResource: String;
+    FErrorMessage: String;
+    FBodyContent: String;
+    FEngine: TOAIEngine;
+    FRequestType: TOAIRequests;
+    FEnginesList: TDictionary<String, String>;
+    FOnResponse: TNotifyEvent;
+    FOnError: TNotifyEvent;
+    FAPIKey: String;
+    FOrganization: String;
+    FRESTRequest: TRESTRequestOAI;
+    FRESTClient: TRESTClient;
+    FRESTResponse: TRESTResponse;
+    FMemtable: TFDMemTable;
+    FRESTResponseDataSetAdapter: TRESTResponseDataSetAdapter;
+    FCompletions: TCompletions;
+    procedure readEngines;
+    procedure SetEndPoint(const Value: String);
+    procedure SetApiKey(const Value: string);
+    procedure SetOrganization(const Value: String);
+    procedure SetEngine(const Value: TOAIEngine);
+    procedure SetCompletions(const Value: TCompletions);
+    procedure CreateRESTRespose;
+    procedure CreateRESTClient;
+    procedure CreateRESTRequest;
+    procedure ExecuteCompletions;
+    procedure readCompletions;
+  public
+    constructor Create(var MemTable: TFDMemTable);
+    destructor Destroy; Override;
+    procedure HttpError(Sender: TCustomRESTClient);
+    property ErrorMessage: String read FErrorMessage;
+  published
+    procedure AfterExecute(Sender: TCustomRESTRequest);
+    procedure Execute;
+    procedure Stop;
+    procedure GetEngines;
+    property OnResponse: TNotifyEvent read FOnResponse write FOnResponse;
+    property OnError: TNotifyEvent read FOnError write FOnError;
+    property Engine: TOAIEngine read FEngine write SetEngine;
+    property Endpoint: String read FEndpoint write SetEndPoint;
+    property Organization: String read FOrganization write SetOrganization;
+    property APIKey: String read FAPIKey write SetApiKey;
+    property AvailableEngines: TDictionary<String, String> read FEnginesList;
+    property RequestType: TOAIRequests read FRequestType write FRequestType;
+    property Completions: TCompletions write SetCompletions;
+    property BodyContent: String read FBodyContent;
+  end;
 
 implementation
 
@@ -106,181 +117,209 @@ implementation
 
 procedure TOpenAI.CreateRESTRespose;
 begin
-   FAcceptType := 'application/json'; // 'application/json, text/plain; q=0.9, text/html;q=0.8,';
-   FContentType := 'application/json';
-   FRESTResponse := TRESTResponse.Create(nil);
-   FRESTResponse.Name := '_restresponse';
-   FRESTResponse.ContentType := FContentType;
-   //
-   FRESTResponseDataSetAdapter := TRESTResponseDataSetAdapter.Create(nil);
-   FRESTResponseDataSetAdapter.DataSet := FMemtable;
-   FRESTResponseDataSetAdapter.Response := FRESTResponse;
+  FAcceptType := 'application/json';
+  // 'application/json, text/plain; q=0.9, text/html;q=0.8,';
+  FContentType := 'application/json';
+  FRESTResponse := TRESTResponse.Create(nil);
+  FRESTResponse.Name := '_restresponse';
+  FRESTResponse.ContentType := FContentType;
+  //
+  FRESTResponseDataSetAdapter := TRESTResponseDataSetAdapter.Create(nil);
+  FRESTResponseDataSetAdapter.DataSet := FMemtable;
+  FRESTResponseDataSetAdapter.Response := FRESTResponse;
 end;
 
 procedure TOpenAI.CreateRESTClient;
 begin
-   FRESTClient := TRESTClient.Create(nil);
-   FRESTClient.AcceptCharset := 'UTF-8';
-   FRESTClient.UserAgent := 'MLOAIClient';
-   FRESTClient.Accept := FAcceptType;
-   FRESTClient.ContentType := FContentType;
-   FRESTClient.OnHTTPProtocolError := HttpError;
+  FRESTClient := TRESTClient.Create(nil);
+  FRESTClient.AcceptCharset := 'UTF-8';
+  FRESTClient.UserAgent := 'MLOAIClient';
+  FRESTClient.Accept := FAcceptType;
+  FRESTClient.ContentType := FContentType;
+  FRESTClient.OnHTTPProtocolError := HttpError;
 end;
 
 procedure TOpenAI.CreateRESTRequest;
 begin
-   FRESTRequest := TRESTRequestOAI.Create(nil);
-   FRESTRequest.AcceptCharset := 'UTF-8';
-   FRESTRequest.Accept := FAcceptType;
-   FRESTRequest.Method := TRESTRequestMethod.rmPOST;
-   FRESTRequest.Params.Clear;
-   FRESTRequest.Body.ClearBody;
-   FRESTRequest.Response := FRESTResponse;
-   FRESTRequest.Client := FRESTClient;
-   FRESTRequest.OnAfterExecute := AfterExecute;
-   FRESTRequest.FRequestType := TOAIRequests.rCustom;
+  FRESTRequest := TRESTRequestOAI.Create(nil);
+  FRESTRequest.AcceptCharset := 'UTF-8';
+  FRESTRequest.Accept := FAcceptType;
+  FRESTRequest.Method := TRESTRequestMethod.rmPOST;
+  FRESTRequest.Params.Clear;
+  FRESTRequest.Body.ClearBody;
+  FRESTRequest.Response := FRESTResponse;
+  FRESTRequest.Client := FRESTClient;
+  FRESTRequest.OnAfterExecute := AfterExecute;
+  FRESTRequest.FRequestType := TOAIRequests.orNone;
 end;
 
 constructor TOpenAI.Create(var MemTable: TFDMemTable);
 begin
-   FErrorMessage := '';
-   FOnResponse := nil;
-   FMemtable := MemTable;
-   //
-   CreateRESTRespose();
-   // Client
-   CreateRESTClient();
-   // Request
-   CreateRESTRequest();
+  FErrorMessage := '';
+  FOnResponse := nil;
+  FMemtable := MemTable;
+  //
+  CreateRESTRespose();
+  // Client
+  CreateRESTClient();
+  // Request
+  CreateRESTRequest();
 end;
 
 destructor TOpenAI.Destroy;
 begin
-   FRESTResponse.Free;
-   FRESTRequest.Free;
-   FRESTClient.Free;
-   FRESTResponseDataSetAdapter.Free;
-   inherited Destroy;
+  FRESTResponse.Free;
+  FRESTRequest.Free;
+  FRESTClient.Free;
+  FRESTResponseDataSetAdapter.Free;
+  inherited Destroy;
 end;
 
 procedure TOpenAI.HttpError(Sender: TCustomRESTClient);
 begin
-   FRESTRequest.FRequestType := rCustom;
-   FOnError(Self);
+  FRESTRequest.FRequestType := orNone;
+  FOnError(Self);
 end;
 
 procedure TOpenAI.SetEndPoint(const Value: String);
 begin
-   FEndpoint := Value;
-   FRESTClient.BaseURL := Value;
+  FEndpoint := Value;
+  FRESTClient.BaseURL := Value;
 end;
 
 procedure TOpenAI.SetEngine(const Value: TOAIEngine);
 begin
-   FEngine := Value;
+  FEngine := Value;
 end;
 
 procedure TOpenAI.SetOrganization(const Value: String);
 begin
-   FOrganization := Value;
+  FOrganization := Value;
 end;
 
 procedure TOpenAI.Stop;
 begin
-   FRESTRequest.FRequestType := rCustom;
+  FRESTRequest.FRequestType := orNone;
 end;
 
 procedure TOpenAI.readEngines();
 begin
-   if not Assigned(FEnginesList) then
-   begin
-      FEnginesList := TDictionary<String, String>.Create;
-   end
-   else
-      FEnginesList.Clear;
+  if not Assigned(FEnginesList) then
+    FEnginesList := TDictionary<String, String>.Create;
 
-   FMemtable.First;
-   while not FMemtable.Eof do
-   begin
-      FEnginesList.Add(FMemtable.FieldByName('id').AsString, FMemtable.FieldByName('ready').AsString);
-      FMemtable.Next;
-   end;
+  FEnginesList.Clear;
+  FMemtable.First;
+  while not FMemtable.Eof do
+  begin
+    FEnginesList.Add(FMemtable.FieldByName('id').AsString,
+      FMemtable.FieldByName('ready').AsString);
+    FMemtable.Next;
+  end;
+
+end;
+
+procedure TOpenAI.readCompletions();
+begin
+
+  FMemtable.First;
+  while not FMemtable.Eof do
+  begin
+    FEnginesList.Add(FMemtable.FieldByName('id').AsString,
+      FMemtable.FieldByName('ready').AsString);
+    FMemtable.Next;
+  end;
 
 end;
 
 procedure TOpenAI.AfterExecute(Sender: TCustomRESTRequest);
 begin
-   FRESTResponse.RootElement := 'data';
-   FRESTResponseDataSetAdapter.ResponseJSON := FRESTResponse;
+  FBodyContent := FRESTResponse.Content;
 
-   case FRESTRequest.FRequestType of
-      rCustom:
-         ;
-      rAuth:
-         ;
-      rEngines:
-         readEngines();
-      rCompletions:
-         ;
-      rSearch:
-         ;
-      rClassifications:
-         ;
-      rAnswers:
-         ;
-      rFiles:
-         ;
-   end;
+  case FRequestType of
+    orEngines:
+      FRESTResponse.RootElement := 'data';
+    orCompletions:
+      FRESTResponse.RootElement := 'choices';
+    orSearch:
+      ;
+    rClassifications:
+      ;
+    orAnswers:
+      ;
+    orFiles:
+      ;
+  end;
 
-   //
-   FRESTRequest.FRequestType := rCustom;
-   if Assigned(FOnResponse) then
-      FOnResponse(Self);
+  FRESTResponseDataSetAdapter.ResponseJSON := FRESTResponse;
+
+  case FRESTRequest.FRequestType of
+    orNone:
+      ;
+    rAuth:
+      ;
+    orEngines:
+      readEngines();
+    orCompletions:
+      readCompletions();
+    orSearch:
+      ;
+    rClassifications:
+      ;
+    orAnswers:
+      ;
+    orFiles:
+      ;
+  end;
+
+  //
+  FRESTRequest.FRequestType := orNone;
+  if Assigned(FOnResponse) then
+    FOnResponse(Self);
 end;
 
 { * https://beta.openai.com/docs/api-reference/authentication * }
 procedure TOpenAI.SetApiKey(const Value: string);
 begin
-   FAPIKey := Value;
-   FRESTRequest.Params.AddHeader('Authorization', 'Bearer ' + FAPIKey);
-   FRESTRequest.Params.ParameterByName('Authorization').Options := [poDoNotEncode];
+  FAPIKey := Value;
+  FRESTRequest.Params.AddHeader('Authorization', 'Bearer ' + FAPIKey);
+  FRESTRequest.Params.ParameterByName('Authorization').Options :=
+    [poDoNotEncode];
 end;
 
 procedure TOpenAI.SetCompletions(const Value: TCompletions);
 begin
-   FCompletions := Value;
+  FCompletions := Value;
 end;
 
 procedure TOpenAI.Execute;
 begin
-   // FRESTRequest.ClearBody;
-   // FRESTRequest.Body.Add(FPayload, TRESTContentType.ctAPPLICATION_JSON);
-   // FRESTRequest.Execute;
-   case FRequestType of
-      rCompletions:
-         ExecuteCompletions();
-   end;
+  // FRESTRequest.ClearBody;
+  // FRESTRequest.Body.Add(FPayload, TRESTContentType.ctAPPLICATION_JSON);
+  // FRESTRequest.Execute;
+  case FRequestType of
+    orCompletions:
+      ExecuteCompletions();
+  end;
 end;
 
 procedure TOpenAI.GetEngines;
 begin
-   Self.RequestType := rEngines;
-   FRESTRequest.FRequestType := rEngines;
-   FRESTRequest.Method := TRESTRequestMethod.rmGET;
-   FRESTRequest.Resource := OAI_GET_ENGINES;
-   FRESTRequest.Execute;
+  Self.RequestType := orEngines;
+  FRESTRequest.FRequestType := orEngines;
+  FRESTRequest.Method := TRESTRequestMethod.rmGET;
+  FRESTRequest.Resource := OAI_GET_ENGINES;
+  FRESTRequest.Execute;
 end;
 
 procedure TOpenAI.ExecuteCompletions;
+var
+  ABody: String;
 begin
-   FRESTRequest.ClearBody;
-
-   // JSON should go into the body
-   Self.FCompletions.CreateCompletion(FRESTRequest.Body);
-//    FRESTRequest.
- //  FRESTRequest.Body.Add(APayLoad, TRESTContentType.ctAPPLICATION_JSON);
-   FRESTRequest.Method := TRESTRequestMethod.rmPOST;
-   // FRESTRequest.Execute;
+  FRESTRequest.ClearBody;
+  FCompletions.CreateCompletion(ABody);
+  FRESTRequest.Body.Add(ABody, TRESTContentType.ctAPPLICATION_JSON);
+  FRESTRequest.Method := TRESTRequestMethod.rmPOST;
+  FRESTRequest.Execute;
 end;
 
 end.
