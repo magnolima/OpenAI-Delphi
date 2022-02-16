@@ -1,5 +1,5 @@
 (*
-  (C)2021 Magno Lima - www.MagnumLabs.com.br - Version 1.0
+  (C)2021-2022 Magno Lima - www.MagnumLabs.com.br - Version 1.0
 
   Delphi libraries for using OpenAI's GPT-3 api
 

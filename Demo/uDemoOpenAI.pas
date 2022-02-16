@@ -1,5 +1,5 @@
 (*
-  (C)2021 Magno Lima - www.MagnumLabs.com.br
+  (C)2021-2022 Magno Lima - www.MagnumLabs.com.br
 
   THIS IS A TEST FILE TO USE WITH OPENAI GPT-3 API
   ** YOU WILL NEED YOUR OWN KEY TO BE ABLE TO USE THIS SOFTWARE **
@@ -32,23 +32,21 @@ uses
   FMX.Bind.Editors, Data.Bind.Components, Data.Bind.Grid, Data.Bind.DBScope,
   Data.DB, FMX.Grid, FireDAC.Comp.DataSet, FireDAC.Comp.Client, FMX.ScrollBox,
   FMX.Memo, FMX.Edit, Data.Bind.ObjectScope, REST.Client, REST.Response.Adapter,
-  FMX.Objects, FMX.TabControl, FMX.EditBox, FMX.NumberBox, FMX.Memo.Types;
+  FMX.Objects, FMX.TabControl, FMX.EditBox, FMX.NumberBox, FMX.Memo.Types,
+  REST.Types, System.Generics.Collections;
 
 const
-  API_KEY = '.\openai.key';
+  APIKey_Filename = '.\openai.key';
   OpenAI_PATH = 'https://api.openai.com/v1';
-
+  
 type
   TfrmDemoOpenAI = class(TForm)
     ToolBar1: TToolBar;
     SpeedButton1: TSpeedButton;
     Memo1: TMemo;
     FDMemTable1: TFDMemTable;
-    Grid1: TGrid;
     DataSource1: TDataSource;
-    BindSourceDB1: TBindSourceDB;
     BindingsList1: TBindingsList;
-    LinkGridToDataSourceBindSourceDB1: TLinkGridToDataSource;
     Image1: TImage;
     SpeedButton2: TSpeedButton;
     Label1: TLabel;
@@ -82,6 +80,10 @@ type
     rbTextCurie001: TRadioButton;
     rbTextBabbage001: TRadioButton;
     rbAda: TRadioButton;
+    RESTClient1: TRESTClient;
+    RESTRequest1: TRESTRequest;
+    RESTResponse1: TRESTResponse;
+    Button2: TButton;
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure SpeedButton1Click(Sender: TObject);
@@ -90,9 +92,9 @@ type
     procedure SpeedButton3Click(Sender: TObject);
     procedure rbDavinciClick(Sender: TObject);
     procedure FormShow(Sender: TObject);
+    procedure Button2Click(Sender: TObject);
   private
     procedure InitCompletions;
-    procedure DetailEngine;
     { Private declarations }
   public
     { Public declarations }
@@ -103,12 +105,13 @@ var
   frmDemoOpenAI: TfrmDemoOpenAI;
   OpenAIKey: String;
   EngineIndex: Integer;
-  NameOfEngines: Array of String = ['text-davinci-001', 'text-curie-001',
-    'text-babbage-001', 'text-ada-001', 'davinci', 'curie', 'babbage', 'ada'];
+  NameOfEngines: Array of String = ['text-davinci-001', 'text-curie-001', 'text-babbage-001', 'text-ada-001', 'davinci', 'curie',
+    'babbage', 'ada'];
 
 implementation
 
 uses
+  System.JSON,
   MLOpenAI.Core, MLOpenAI.Completions;
 
 var
@@ -116,8 +119,7 @@ var
 
 {$R *.fmx}
 
-function SliceString(const AString: string; const ADelimiter: string)
-  : TArray<String>;
+function SliceString(const AString: string; const ADelimiter: string): TArray<String>;
 var
   I: Integer;
   p: ^Integer;
@@ -152,19 +154,13 @@ end;
 procedure TfrmDemoOpenAI.FormCreate(Sender: TObject);
 begin
   EngineIndex := 0;
-  if FileExists(API_KEY) then
-  begin
-    // Store your key safely. Never share or expose it!
-    OpenAIKey := TFile.ReadAllText(API_KEY);
 
-    OpenAI := TOpenAI.Create(FDMemTable1);
-    OpenAI.Endpoint := OpenAI_PATH;
-    OpenAI.Engine := TOAIEngine.egTextDavinci001;
-    OpenAI.OnResponse := OnOpenAIResponse;
+  // Store your key safely. Never share or expose it!
+  OpenAI := TOpenAI.Create(FDMemTable1, APIKey_Filename);
+  OpenAI.Endpoint := OpenAI_PATH;
+  OpenAI.Engine := TOAIEngine.egTextCurie001;
+  OpenAI.OnResponse := OnOpenAIResponse;
 
-  end
-  else
-    ShowMessage('Api key file not found');
 end;
 
 procedure TfrmDemoOpenAI.FormDestroy(Sender: TObject);
@@ -172,57 +168,55 @@ begin
   OpenAI.DisposeOf;
 end;
 
-procedure TfrmDemoOpenAI.DetailEngine();
+procedure TfrmDemoOpenAI.Button2Click(Sender: TObject);
 begin
-  Memo2.Lines.Add('We are using the "' + OpenAI_PATH + '/engines/' +
-    NameOfEngines[EngineIndex] + OAI_GET_COMPLETION + '" engine. Requests are: '
-    + OpenAI.Endpoint)
+  Memo2.Lines.Clear;
 end;
 
 procedure TfrmDemoOpenAI.FormShow(Sender: TObject);
 begin
-  DetailEngine();
+  OpenAI.RequestType := orEngines;
 end;
 
 procedure TfrmDemoOpenAI.OnOpenAIResponse(Sender: TObject);
+var
+  field: TField;
+  Engine: TPair<string, string>;
 begin
   Button1.Enabled := True;
   AniIndicator1.Enabled := False;
 
-  // Debug
-  Memo2.Lines.Text := OpenAI.BodyContent;
+  // We can get it directly
+  if OpenAI.RequestType = TOAIRequests.orCompletions then
+    Memo2.Lines.Add('AI: ' + Trim(OpenAI.GetChoicesResult));
 
-  TThread.Queue(nil,
-    procedure
-    var
-      Engine: String;
+  if OpenAI.RequestType = TOAIRequests.orEngines then
+  begin
+    for Engine in OpenAI.AvailableEngines do
+      Memo2.Lines.Add(Engine.Key + ' = ' + Engine.Value)
+  end
+  else
+    // or, we can read from the memtable
+    while not FDMemTable1.Eof do
     begin
-      case OpenAI.RequestType of
-        orEngines:
-          begin
-            for Engine in OpenAI.AvailableEngines.Keys do
-            begin
-              if Engine = NameOfEngines[EngineIndex] then
-                Memo2.Lines.Add(Engine + ' is ready = ' +
-                  OpenAI.AvailableEngines[Engine]);
-            end;
-          end;
-      end;
-    end);
+      for field in FDMemTable1.Fields do
+        Memo2.Lines.Add(field.FieldName + ' = ' + field.AsString);
+
+      FDMemTable1.Next;
+    end;
 
 end;
 
 procedure TfrmDemoOpenAI.rbDavinciClick(Sender: TObject);
 begin
   EngineIndex := (Sender as TRadioButton).Tag;
-  DetailEngine();
 end;
 
 procedure TfrmDemoOpenAI.SpeedButton1Click(Sender: TObject);
 begin
   OpenAI.RequestType := orEngines;
   TabControl1.TabIndex := 0;
-  Label2.Text := 'Engines';
+  Label2.text := 'Engines';
 end;
 
 // Ref: https://beta.openai.com/docs/api-reference/completions/create
@@ -230,12 +224,12 @@ procedure TfrmDemoOpenAI.SpeedButton2Click(Sender: TObject);
 begin
   OpenAI.RequestType := orCompletions;
   TabControl1.TabIndex := 1;
-  Label2.Text := 'Completions';
+  Label2.text := 'Completions';
 end;
 
 procedure TfrmDemoOpenAI.SpeedButton3Click(Sender: TObject);
 begin
-  Label2.Text := 'Searches';
+  Label2.text := 'Searches';
   TabControl1.TabIndex := 2;
   OpenAI.RequestType := orSearch;
 end;
@@ -246,14 +240,14 @@ var
   I: Integer;
   sPrompt: String;
 
-  function getStops(Text: String): TArray<String>;
+  function getStops(text: String): TArray<String>;
   begin
-    Result := SliceString(Text, ';');
+    Result := SliceString(text, ';');
   end;
 
 begin
 
-  sPrompt := Memo1.Text.Trim;
+  sPrompt := Memo1.text.Trim;
 
   if sPrompt.IsEmpty then
   begin
@@ -265,7 +259,7 @@ begin
   ACompletions.MaxTokens := Round(nbMaxTokens.Value);
   ACompletions.SamplingTemperature := 1;
   ACompletions.TopP := 1;
-  ACompletions.Stop := getStops(Edit1.Text);
+  ACompletions.Stop := getStops(Edit1.text);
   ACompletions.Prompt := sPrompt;
   ACompletions.LogProbabilities := -1; // -1 will set as null default
   //
@@ -273,37 +267,45 @@ begin
   // https://api.openai.com/v1/engines/davinci/completions
   OpenAI.RequestType := orCompletions;
   OpenAI.Completions := ACompletions;
-  OpenAI.Endpoint := OpenAI_PATH + '/engines/' + NameOfEngines[EngineIndex] +
-    OAI_GET_COMPLETION;
+  OpenAI.Endpoint := OpenAI_PATH + '/engines/' + NameOfEngines[EngineIndex] + OAI_GET_COMPLETION;
 
-  //DetailEngine();
+  // DetailEngine();
 end;
 
 procedure TfrmDemoOpenAI.Button1Click(Sender: TObject);
 begin
+  if OpenAI.APIKey.IsEmpty then
+  begin
+    Memo2.Lines.Add('API key is missing');
+    Exit;
+  end;
+
+  if Memo1.text.IsEmpty then
+  begin
+    Memo2.Lines.Add('Nothing to do here...');
+    Exit;
+  end;
 
   if OpenAI.RequestType = orNone then
   begin
-    ShowMessage('Chose a request type.');
+    Memo2.Lines.Add('Chose a request type.');
     Exit;
   end;
 
   Button1.Enabled := False;
   AniIndicator1.Enabled := True;
-
+  AniIndicator1.Visible := True;
   TThread.CreateAnonymousThread(
     procedure
     begin
 
-      OpenAI.APIKey := OpenAIKey;
-
       try
         case OpenAI.RequestType of
           orEngines:
-          begin
-            OpenAI.GetEngines();
-            Exit;
-          end;
+            begin
+              OpenAI.GetEngines();
+              Exit;
+            end;
           orCompletions:
             InitCompletions();
         end;
@@ -328,7 +330,7 @@ begin
         end;
 
         try
-          Memo2.Lines.Add(OpenAI.Endpoint);
+          // Memo2.Lines.Add(OpenAI.Endpoint);
           OpenAI.Execute;
         except
           on E: Exception do
@@ -345,8 +347,3 @@ begin
 end;
 
 end.
-
-// '{'#$A'  "error": {'#$A'    "code": null, '#$A' " message ": " '' null '' is not of
-//
-// type
-// '' Integer '' - '' logprobs '' ", '#$A' " Param ": null, '#$A' " type ": " invalid_request_error " '#$A' } '#$A' } '#$A

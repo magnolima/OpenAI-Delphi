@@ -1,5 +1,5 @@
 (*
-  (C)2021 Magno Lima - www.MagnumLabs.com.br - Version 1.0
+  (C)2021-2022 Magno Lima - www.MagnumLabs.com.br - Version 1.0
 
   Delphi libraries for using OpenAI's GPT-3 api
 
@@ -38,14 +38,12 @@ const
   OAI_CLASSIFICATIONS = '/classifications';
   OAI_ANSWER = '/answers';
   OAI_FILES = '/files';
-  TOAIEngineName: TArray<String> = ['text-davinci-001', 'text-curie-001',
-    'text-babbage-001', 'text-ada-001', 'davinci', 'curie', 'babbage', 'ada'];
+  TOAIEngineName: TArray<String> = ['text-davinci-001', 'text-curie-001', 'text-babbage-001', 'text-ada-001', 'davinci', 'curie',
+    'babbage', 'ada'];
 
 type
-  TOAIEngine = (egTextDavinci001, egTextCurie001, egTextBabbage001,
-    egTextAda001, egDavinci, egCurie, egBabbage, egAda);
-  TOAIRequests = (orNone, rAuth, orEngines, orCompletions, orSearch,
-    rClassifications, orAnswers, orFiles);
+  TOAIEngine = (egTextDavinci001, egTextCurie001, egTextBabbage001, egTextAda001, egDavinci, egCurie, egBabbage, egAda);
+  TOAIRequests = (orNone, rAuth, orEngines, orCompletions, orSearch, rClassifications, orAnswers, orFiles);
 
 type
   TRESTRequestOAI = class(TRESTRequest)
@@ -88,17 +86,17 @@ type
     procedure CreateRESTClient;
     procedure CreateRESTRequest;
     procedure ExecuteCompletions;
-    procedure readCompletions;
   public
-    constructor Create(var MemTable: TFDMemTable);
+    constructor Create(var MemTable: TFDMemTable; const APIFileName: String = '');
     destructor Destroy; Override;
     procedure HttpError(Sender: TCustomRESTClient);
     property ErrorMessage: String read FErrorMessage;
   published
-    procedure AfterExecute(Sender: TCustomRESTRequest);
     procedure Execute;
     procedure Stop;
     procedure GetEngines;
+    function GetChoicesResult: String;
+    procedure AfterExecute(Sender: TCustomRESTRequest);
     property OnResponse: TNotifyEvent read FOnResponse write FOnResponse;
     property OnError: TNotifyEvent read FOnError write FOnError;
     property Engine: TOAIEngine read FEngine write SetEngine;
@@ -118,8 +116,8 @@ implementation
 procedure TOpenAI.CreateRESTRespose;
 begin
   FAcceptType := 'application/json';
-  // 'application/json, text/plain; q=0.9, text/html;q=0.8,';
   FContentType := 'application/json';
+  //
   FRESTResponse := TRESTResponse.Create(nil);
   FRESTResponse.Name := '_restresponse';
   FRESTResponse.ContentType := FContentType;
@@ -133,7 +131,7 @@ procedure TOpenAI.CreateRESTClient;
 begin
   FRESTClient := TRESTClient.Create(nil);
   FRESTClient.AcceptCharset := 'UTF-8';
-  FRESTClient.UserAgent := 'MLOAIClient';
+  FRESTClient.UserAgent := 'MagnumLabsOAIClient';
   FRESTClient.Accept := FAcceptType;
   FRESTClient.ContentType := FContentType;
   FRESTClient.OnHTTPProtocolError := HttpError;
@@ -153,17 +151,24 @@ begin
   FRESTRequest.FRequestType := TOAIRequests.orNone;
 end;
 
-constructor TOpenAI.Create(var MemTable: TFDMemTable);
+constructor TOpenAI.Create(var MemTable: TFDMemTable; const APIFileName: String = '');
 begin
   FErrorMessage := '';
   FOnResponse := nil;
   FMemtable := MemTable;
   //
   CreateRESTRespose();
-  // Client
+  //
   CreateRESTClient();
-  // Request
+  //
   CreateRESTRequest();
+
+  if not APIFileName.IsEmpty and FileExists(APIFileName) then
+  begin
+    FAPIKey := TFile.ReadAllText(APIFileName);
+    SetApiKey(FAPIKey);
+  end;
+
 end;
 
 destructor TOpenAI.Destroy;
@@ -202,30 +207,31 @@ begin
   FRESTRequest.FRequestType := orNone;
 end;
 
+function TOpenAI.GetChoicesResult: String;
+var
+  JSonValue: TJSonValue;
+  JsonArray: TJSONArray;
+  ArrayElement: TJSonValue;
+  FoundValue: TJSonValue;
+begin
+  Result := '';
+
+  JSonValue := TJSonObject.ParseJSONValue(FBodyContent);
+  JsonArray := JSonValue.GetValue<TJSONArray>('choices');
+  for ArrayElement in JsonArray do
+    Result := Result + ArrayElement.GetValue<String>('text');
+
+end;
+
 procedure TOpenAI.readEngines();
 begin
   if not Assigned(FEnginesList) then
     FEnginesList := TDictionary<String, String>.Create;
 
   FEnginesList.Clear;
-  FMemtable.First;
   while not FMemtable.Eof do
   begin
-    FEnginesList.Add(FMemtable.FieldByName('id').AsString,
-      FMemtable.FieldByName('ready').AsString);
-    FMemtable.Next;
-  end;
-
-end;
-
-procedure TOpenAI.readCompletions();
-begin
-
-  FMemtable.First;
-  while not FMemtable.Eof do
-  begin
-    FEnginesList.Add(FMemtable.FieldByName('id').AsString,
-      FMemtable.FieldByName('ready').AsString);
+    FEnginesList.Add(FMemtable.FieldByName('id').AsString, FMemtable.FieldByName('ready').AsString);
     FMemtable.Next;
   end;
 
@@ -251,8 +257,9 @@ begin
   end;
 
   FRESTResponseDataSetAdapter.ResponseJSON := FRESTResponse;
+  FMemtable.First;
 
-  case FRESTRequest.FRequestType of
+  case FRequestType of
     orNone:
       ;
     rAuth:
@@ -260,7 +267,7 @@ begin
     orEngines:
       readEngines();
     orCompletions:
-      readCompletions();
+      ;
     orSearch:
       ;
     rClassifications:
@@ -282,8 +289,7 @@ procedure TOpenAI.SetApiKey(const Value: string);
 begin
   FAPIKey := Value;
   FRESTRequest.Params.AddHeader('Authorization', 'Bearer ' + FAPIKey);
-  FRESTRequest.Params.ParameterByName('Authorization').Options :=
-    [poDoNotEncode];
+  FRESTRequest.Params.ParameterByName('Authorization').Options := [poDoNotEncode];
 end;
 
 procedure TOpenAI.SetCompletions(const Value: TCompletions);
@@ -296,6 +302,11 @@ begin
   // FRESTRequest.ClearBody;
   // FRESTRequest.Body.Add(FPayload, TRESTContentType.ctAPPLICATION_JSON);
   // FRESTRequest.Execute;
+  // FMemtable.Open;
+
+  if not FMemtable.IsEmpty then
+    FMemtable.EmptyDataSet;
+  // FMemtable.Close;
   case FRequestType of
     orCompletions:
       ExecuteCompletions();
