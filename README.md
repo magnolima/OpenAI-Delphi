@@ -1,9 +1,11 @@
 # OpenAI-Delphi
 **A simple wrapper for the GPT-3 OpenAI API using Delphi.**
 
+2022-03-16 - *Update: now using text-davinci-002 engine*
+
 This library should wrapper all the API requests. All the returning data will be translated into a memory table/dataset for easly of handling.
 
-We are covering the following requests:
+We are going to cover the following requests:
 
 1. Engines
 2. Completions
@@ -12,7 +14,7 @@ We are covering the following requests:
 5. Answers
 6. Files
 
-**IMPORTANT**: to use GPT-3 you'll need to have your own API key. Please go to https://beta.openai.com/ and request yours (waitlist).
+**IMPORTANT**: to use GPT-3 you'll need to have your own API key. Please go to https://beta.openai.com/ and request yours.
 
 Understand that I am not an AI (even GPT-3) expert. This work was done so I could learn about. Please follow the OpenAI documentation for doubts. Eventually Not all the features/attributes could be available througout the requests.
 
@@ -40,7 +42,7 @@ var
 begin
    Completions := TCompletions.Create;
    Completions.Prompt := 'Once upon a time';
-   Completions.MaxTokens := 5;
+   Completions.MaxTokens := 64;
    Completions.SamplingTemperature := 1; // Default 1
    Completions.NucleusSampling := 1; // top_p
    

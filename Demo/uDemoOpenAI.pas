@@ -84,6 +84,16 @@ type
     RESTRequest1: TRESTRequest;
     RESTResponse1: TRESTResponse;
     Button2: TButton;
+    SpeedButton4: TSpeedButton;
+    Label9: TLabel;
+    Button3: TButton;
+    OpenDialog1: TOpenDialog;
+    RadioButton1: TRadioButton;
+    RadioButton2: TRadioButton;
+    RadioButton3: TRadioButton;
+    Label10: TLabel;
+    Label11: TLabel;
+    RadioButton4: TRadioButton;
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure SpeedButton1Click(Sender: TObject);
@@ -93,8 +103,15 @@ type
     procedure rbDavinciClick(Sender: TObject);
     procedure FormShow(Sender: TObject);
     procedure Button2Click(Sender: TObject);
+    procedure SpeedButton4Click(Sender: TObject);
+    procedure RadioButton1Click(Sender: TObject);
+    procedure RadioButton2Change(Sender: TObject);
+    procedure RadioButton3Change(Sender: TObject);
+    procedure Button3Click(Sender: TObject);
+    procedure RadioButton4Change(Sender: TObject);
   private
     procedure InitCompletions;
+    procedure InitFile;
     { Private declarations }
   public
     { Public declarations }
@@ -173,6 +190,12 @@ begin
   Memo2.Lines.Clear;
 end;
 
+procedure TfrmDemoOpenAI.Button3Click(Sender: TObject);
+begin
+  if OpenDialog1.Execute then
+    Label9.Text := OpenDialog1.FileName;
+end;
+
 procedure TfrmDemoOpenAI.FormShow(Sender: TObject);
 begin
   OpenAI.RequestType := orEngines;
@@ -207,6 +230,26 @@ begin
 
 end;
 
+procedure TfrmDemoOpenAI.RadioButton1Click(Sender: TObject);
+begin
+  OpenAI.FilePurpose := TFilePurpose.fpAnswer;
+end;
+
+procedure TfrmDemoOpenAI.RadioButton2Change(Sender: TObject);
+begin
+  OpenAI.FilePurpose := TFilePurpose.fpSearch;
+end;
+
+procedure TfrmDemoOpenAI.RadioButton3Change(Sender: TObject);
+begin
+  OpenAI.FilePurpose := TFilePurpose.fpClassification;
+end;
+
+procedure TfrmDemoOpenAI.RadioButton4Change(Sender: TObject);
+begin
+  OpenAI.FilePurpose := TFilePurpose.fpFineTune;
+end;
+
 procedure TfrmDemoOpenAI.rbDavinciClick(Sender: TObject);
 begin
   EngineIndex := (Sender as TRadioButton).Tag;
@@ -232,6 +275,13 @@ begin
   Label2.text := 'Searches';
   TabControl1.TabIndex := 2;
   OpenAI.RequestType := orSearch;
+end;
+
+procedure TfrmDemoOpenAI.SpeedButton4Click(Sender: TObject);
+begin
+  Label2.text := 'Files';
+  TabControl1.TabIndex := 3;
+  OpenAI.RequestType := orFiles;
 end;
 
 procedure TfrmDemoOpenAI.InitCompletions;
@@ -272,6 +322,11 @@ begin
   // DetailEngine();
 end;
 
+procedure TfrmDemoOpenAI.InitFile;
+begin
+
+end;
+
 procedure TfrmDemoOpenAI.Button1Click(Sender: TObject);
 begin
   if OpenAI.APIKey.IsEmpty then
@@ -280,7 +335,13 @@ begin
     Exit;
   end;
 
-  if Memo1.text.IsEmpty then
+  if (OpenAI.RequestType = orFiles) and (OpenDialog1.FileName = '') then
+  begin
+    Memo2.Lines.Add('Choose a file to upload');
+    Exit;
+  end;
+
+  if (OpenAI.RequestType = orCompletions) and (Memo1.text.IsEmpty) then
   begin
     Memo2.Lines.Add('Nothing to do here...');
     Exit;
@@ -288,13 +349,14 @@ begin
 
   if OpenAI.RequestType = orNone then
   begin
-    Memo2.Lines.Add('Chose a request type.');
+    Memo2.Lines.Add('Choose a request type.');
     Exit;
   end;
 
   Button1.Enabled := False;
   AniIndicator1.Enabled := True;
   AniIndicator1.Visible := True;
+
   TThread.CreateAnonymousThread(
     procedure
     begin
@@ -308,6 +370,8 @@ begin
             end;
           orCompletions:
             InitCompletions();
+          orFiles:
+            InitFile();
         end;
 
         case EngineIndex of

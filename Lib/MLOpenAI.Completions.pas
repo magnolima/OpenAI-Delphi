@@ -153,7 +153,7 @@ begin
   TopP := 1;
   FNumberOfCompletions := 1;
   // FStream := False;
-  FLogProbabilities := 1;
+  FLogProbabilities := -1;
   FEcho := false;
   FStop := nil;
   FPresencePenalty := 0;
@@ -180,28 +180,23 @@ begin
 
   // AJSONObject.AddPair('engine', FEngine);
   AJSONObject.AddPair(TJSONPair.Create('prompt', FPrompt));
-  AJSONObject.AddPair(TJSONPair.Create('temperature',
-    TJSONNumber.Create(FSamplingTemperature)));
-  AJSONObject.AddPair(TJSONPair.Create('max_tokens',
-    TJSONNumber.Create(FMaxTokens)));
+  AJSONObject.AddPair(TJSONPair.Create('temperature', TJSONNumber.Create(FSamplingTemperature)));
+  AJSONObject.AddPair(TJSONPair.Create('max_tokens', TJSONNumber.Create(FMaxTokens)));
   AJSONObject.AddPair(TJSONPair.Create('top_p', TJSONNumber.Create(FTopP)));
-  AJSONObject.AddPair(TJSONPair.Create('frequency_penalty',
-    TJSONNumber.Create(FFrequencyPenalty)));
-  AJSONObject.AddPair(TJSONPair.Create('presence_penalty',
-    TJSONNumber.Create(FPresencePenalty)));
+  AJSONObject.AddPair(TJSONPair.Create('frequency_penalty', TJSONNumber.Create(FFrequencyPenalty)));
+  AJSONObject.AddPair(TJSONPair.Create('presence_penalty', TJSONNumber.Create(FPresencePenalty)));
 
   for Stop in FStop do
     AJSONObject.AddPair(TJSONPair.Create('stop', Stop));
 
   if FNumberOfCompletions <> 1 then
-    AJSONObject.AddPair(TJSONPair.Create('n',
-      TJSONNumber.Create(FNumberOfCompletions)));
+    AJSONObject.AddPair(TJSONPair.Create('n', TJSONNumber.Create(FNumberOfCompletions)));
 
- { if FLogProbabilities = -1 then
+  { if FLogProbabilities = -1 then
     AJSONObject.AddPair(TJSONPair.Create('logprobs', 'null'))
-  else
+    else
     AJSONObject.AddPair(TJSONPair.Create('logprobs',
-      TJSONNumber.Create(FLogProbabilities))); }
+    TJSONNumber.Create(FLogProbabilities))); }
 
   // AJSONObject.AddPair(TJSONPair.Create('stream', 'false')); // not implemented
 
