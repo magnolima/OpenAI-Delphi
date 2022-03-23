@@ -169,16 +169,7 @@ var
   AJSONPair: TJSONPair;
   Value, Stop: String;
 begin
-  // "prompt": "machines can help humans",
-  // "temperature": 0.7,
-  // "max_tokens": 64,
-  // "top_p": 1,
-  // "frequency_penalty": 0,
-  // "presence_penalty": 0
-
   AJSONObject := TJSONObject.Create;
-
-  // AJSONObject.AddPair('engine', FEngine);
   AJSONObject.AddPair(TJSONPair.Create('prompt', FPrompt));
   AJSONObject.AddPair(TJSONPair.Create('temperature', TJSONNumber.Create(FSamplingTemperature)));
   AJSONObject.AddPair(TJSONPair.Create('max_tokens', TJSONNumber.Create(FMaxTokens)));
@@ -192,18 +183,15 @@ begin
   if FNumberOfCompletions <> 1 then
     AJSONObject.AddPair(TJSONPair.Create('n', TJSONNumber.Create(FNumberOfCompletions)));
 
-  { if FLogProbabilities = -1 then
-    AJSONObject.AddPair(TJSONPair.Create('logprobs', 'null'))
-    else
-    AJSONObject.AddPair(TJSONPair.Create('logprobs',
-    TJSONNumber.Create(FLogProbabilities))); }
-
-  // AJSONObject.AddPair(TJSONPair.Create('stream', 'false')); // not implemented
+{$REGION "TODO: soon"}
+//  if FLogProbabilities = -1 then
+//    AJSONObject.AddPair(TJSONPair.Create('logprobs', 'null'))
+//  else
+//    AJSONObject.AddPair(TJSONPair.Create('logprobs', TJSONNumber.Create(FLogProbabilities)));
+{$ENDREGION}
 
   ABody := AJSONObject.ToJSON;
   AJSONObject.Free;
-
-  // ABody.Add(AJSONObject.ToJSON, TRESTContentType.ctAPPLICATION_JSON);
 
 end;
 
