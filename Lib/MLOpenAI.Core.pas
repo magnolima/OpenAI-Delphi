@@ -38,13 +38,13 @@ const
   OAI_CLASSIFICATIONS = '/classifications';
   OAI_ANSWER = '/answers';
   OAI_FILES = '/files';
-  TOAIEngineName: TArray<String> = ['text-davinci-002', 'text-davinci-001', 'text-curie-001', 'text-babbage-001', 'text-ada-001', 'davinci', 'curie',
-    'babbage', 'ada'];
+  TOAIEngineName: TArray<String> = ['text-davinci-002', 'text-davinci-001', 'text-curie-001', 'text-babbage-001', 'text-ada-001', 'davinci',
+    'curie', 'babbage', 'ada'];
 
 type
   TOAIEngine = (egTextDavinci002, egTextDavinci001, egTextCurie001, egTextBabbage001, egTextAda001, egDavinci, egCurie, egBabbage, egAda);
   TOAIRequests = (orNone, rAuth, orEngines, orCompletions, orSearch, rClassifications, orAnswers, orFiles);
-  TFilePurpose  = (fpAnswer, fpSearch, fpClassification, fpFineTune);
+  TFilePurpose = (fpAnswer, fpSearch, fpClassification, fpFineTune);
 
 type
   TRESTRequestOAI = class(TRESTRequest)
@@ -78,6 +78,7 @@ type
     FMemtable: TFDMemTable;
     FRESTResponseDataSetAdapter: TRESTResponseDataSetAdapter;
     FCompletions: TCompletions;
+    FStatusCode: Integer;
     procedure readEngines;
     procedure SetEndPoint(const Value: String);
     procedure SetApiKey(const Value: string);
@@ -88,10 +89,12 @@ type
     procedure CreateRESTClient;
     procedure CreateRESTRequest;
     procedure ExecuteCompletions;
+    procedure HttpRequestError(Sender: TCustomRESTRequest);
+    procedure HttpClientError(Sender: TCustomRESTClient);
   public
     constructor Create(var MemTable: TFDMemTable; const APIFileName: String = '');
     destructor Destroy; Override;
-    procedure HttpError(Sender: TCustomRESTClient);
+    //procedure HttpError(Sender: TCustomRESTClient);
     property ErrorMessage: String read FErrorMessage;
   published
     procedure Execute;
@@ -101,6 +104,7 @@ type
     procedure AfterExecute(Sender: TCustomRESTRequest);
     property OnResponse: TNotifyEvent read FOnResponse write FOnResponse;
     property OnError: TNotifyEvent read FOnError write FOnError;
+    property StatusCode: Integer read FStatusCode;
     property Engine: TOAIEngine read FEngine write SetEngine;
     property Endpoint: String read FEndpoint write SetEndPoint;
     property Organization: String read FOrganization write SetOrganization;
@@ -170,7 +174,7 @@ begin
   FRESTClient.UserAgent := 'MagnumLabsOAIClient';
   FRESTClient.Accept := FAcceptType;
   FRESTClient.ContentType := FContentType;
-  FRESTClient.OnHTTPProtocolError := HttpError;
+  FRESTClient.OnHTTPProtocolError := HttpClientError;
 end;
 
 procedure TOpenAI.CreateRESTRequest;
@@ -185,6 +189,7 @@ begin
   FRESTRequest.Client := FRESTClient;
   FRESTRequest.OnAfterExecute := AfterExecute;
   FRESTRequest.FRequestType := TOAIRequests.orNone;
+  FRESTRequest.OnHTTPProtocolError := HttpRequestError;
 end;
 
 constructor TOpenAI.Create(var MemTable: TFDMemTable; const APIFileName: String = '');
@@ -206,7 +211,6 @@ begin
 {$ELSE}
   fileName := APIFileName;
 {$ENDIF}
-
   if not APIFileName.IsEmpty and FileExists(fileName) then
   begin
     FAPIKey := TFile.ReadAllText(fileName);
@@ -224,9 +228,18 @@ begin
   inherited Destroy;
 end;
 
-procedure TOpenAI.HttpError(Sender: TCustomRESTClient);
+procedure TOpenAI.HttpRequestError(Sender: TCustomRESTRequest);
 begin
   FRESTRequest.FRequestType := orNone;
+  FStatusCode := FRESTRequest.Response.StatusCode;
+  FErrorMessage := 'Request error '+FRESTRequest.Response.StatusCode.ToString;
+  FOnError(Self);
+end;
+
+procedure TOpenAI.HttpClientError(Sender: TCustomRESTClient);
+begin
+  FRESTRequest.FRequestType := orNone;
+  FErrorMessage := FRESTRequest.Response.ErrorMessage;
   FOnError(Self);
 end;
 
