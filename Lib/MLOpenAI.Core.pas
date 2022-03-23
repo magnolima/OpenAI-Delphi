@@ -94,7 +94,7 @@ type
   public
     constructor Create(var MemTable: TFDMemTable; const APIFileName: String = '');
     destructor Destroy; Override;
-    //procedure HttpError(Sender: TCustomRESTClient);
+    // procedure HttpError(Sender: TCustomRESTClient);
     property ErrorMessage: String read FErrorMessage;
   published
     procedure Execute;
@@ -232,7 +232,7 @@ procedure TOpenAI.HttpRequestError(Sender: TCustomRESTRequest);
 begin
   FRESTRequest.FRequestType := orNone;
   FStatusCode := FRESTRequest.Response.StatusCode;
-  FErrorMessage := 'Request error '+FRESTRequest.Response.StatusCode.ToString;
+  FErrorMessage := 'Request error: ' + FRESTRequest.Response.StatusCode.ToString;
   FOnError(Self);
 end;
 
@@ -295,7 +295,18 @@ begin
 end;
 
 procedure TOpenAI.AfterExecute(Sender: TCustomRESTRequest);
+var
+  LStatusCode: Integer;
 begin
+
+  LStatusCode := FRESTResponse.StatusCode;
+
+  if FStatusCode = 0 then
+    FStatusCode := LStatusCode;
+
+  if not (FStatusCode in [200,201]) then
+    Exit;
+
   FBodyContent := FRESTResponse.Content;
 
   case FRequestType of
@@ -335,7 +346,6 @@ begin
       ;
   end;
 
-  //
   FRESTRequest.FRequestType := orNone;
   if Assigned(FOnResponse) then
     FOnResponse(Self);
