@@ -2,6 +2,7 @@
 **A simple wrapper for the GPT-3 OpenAI API using Delphi.**
 
 2022-03-16 - *Update: now using text-davinci-002 engine*
+
 2022-03-28 - *Update: just a kickoff to files and fine tunes*
 
 !!!THE DEMO PROVIDED IS OUTDATED!!!
