@@ -23,10 +23,10 @@ unit MLOpenAI.Finetunes;
 interface
 
 uses
-  System.SysUtils, REST.Client, REST.Types, System.JSON, MLOpenAI.Files;
+  System.SysUtils, REST.Client, REST.Types, System.JSON, MLOpenAI.Files, MLOpenAI.Types;
 
 type
-  TArrayOfSingle: Array of Single;
+  TArrayOfSingle = Array of Single;
 
 type
   TFinetunes = class
@@ -45,28 +45,20 @@ type
     FClassificationBetas: TArrayOfSingle;
     FClassificationPositiveClass: String;
     FSuffix: String;
-    procedure ClassificationPositiveClass(const Value: String);
     property TrainingFile: String read FTrainingFile write FTrainingFile;
     property ValidationFile: String read FValidationFile write FValidationFile;
     property Model: String read FModel write FModel;
     property NEpochs: Integer read FNEpochs write FNEpochs;
     property BatchSize: Integer read FBatchSize write FBatchSize;
     property LearningRateMultiplier: Single read FLearningRateMultiplier write FLearningRateMultiplier;
-    property PromptLossWeight: Single FPromptLossWeight write FPromptLossWeight;
+    property PromptLossWeight: Single read FPromptLossWeight write FPromptLossWeight;
     property ComputeClassificationMetrics: Single read FComputeClassificationMetrics write FComputeClassificationMetrics;
     property ClassificationNClasses: Integer read FClassificationNClasses write FClassificationNClasses;
-    property ClassificationPositiveClass: String read FClassificationPositiveClass write ClassificationPositiveClass;
+    property ClassificationPositiveClass: String read FClassificationPositiveClass write FClassificationPositiveClass;
     property ClassificationBetas: TArrayOfSingle read FClassificationBetas write FClassificationBetas;
     property Suffix: String read FSuffix write FSuffix;
   end;
 
 implementation
-
-{ TFinetunes }
-
-procedure TFinetunes.ClassificationPositiveClass(const Value: String);
-begin
-  FClassificationPositiveClass := Value;
-end;
 
 end.

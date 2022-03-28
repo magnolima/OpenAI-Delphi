@@ -68,7 +68,7 @@ type
 implementation
 
 uses
-  MLOpenAI.Core;
+  MLOpenAI.Core, MLOpenAI.Types;
 { TCompletion }
 
 (* logit_bias and stream are not yet implemented *)
