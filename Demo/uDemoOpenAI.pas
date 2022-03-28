@@ -33,7 +33,8 @@ uses
   Data.DB, FMX.Grid, FireDAC.Comp.DataSet, FireDAC.Comp.Client, FMX.ScrollBox,
   FMX.Memo, FMX.Edit, Data.Bind.ObjectScope, REST.Client, REST.Response.Adapter,
   FMX.Objects, FMX.TabControl, FMX.EditBox, FMX.NumberBox, FMX.Memo.Types,
-  REST.Types, System.Generics.Collections;
+  REST.Types, System.Generics.Collections,
+  MLOpenAI.Types;
 
 const
   APIKey_Filename = '.\openai.key';
@@ -94,6 +95,7 @@ type
     Label10: TLabel;
     Label11: TLabel;
     RadioButton4: TRadioButton;
+    Label12: TLabel;
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure SpeedButton1Click(Sender: TObject);
@@ -122,8 +124,8 @@ var
   frmDemoOpenAI: TfrmDemoOpenAI;
   OpenAIKey: String;
   EngineIndex: Integer;
-  NameOfEngines: Array of String = ['text-davinci-001', 'text-curie-001', 'text-babbage-001', 'text-ada-001', 'davinci', 'curie',
-    'babbage', 'ada'];
+  NameOfEngines: TArray<String>; // TOAIEngineName;
+  //Array of String = ['text-davinci-001', 'text-curie-001', 'text-babbage-001', 'text-ada-001', 'davinci', 'curie',   'babbage', 'ada'];
 
 implementation
 
@@ -171,7 +173,7 @@ end;
 procedure TfrmDemoOpenAI.FormCreate(Sender: TObject);
 begin
   EngineIndex := 0;
-
+  NameOfEngines := TOAIEngineName;
   // Store your key safely. Never share or expose it!
   OpenAI := TOpenAI.Create(FDMemTable1, APIKey_Filename);
   OpenAI.Endpoint := OpenAI_PATH;

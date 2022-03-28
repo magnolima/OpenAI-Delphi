@@ -29,22 +29,8 @@ uses
   System.Generics.Collections,
   Data.DB, FireDAC.Comp.DataSet, FireDAC.Comp.Client, System.Types,
   System.IOUtils, System.TypInfo, System.JSON,
-  MLOpenAI.Completions;
-
-const
-  OAI_GET_ENGINES = '/engines';
-  OAI_GET_COMPLETION = '/completions';
-  OAI_SEARCH = '/search';
-  OAI_CLASSIFICATIONS = '/classifications';
-  OAI_ANSWER = '/answers';
-  OAI_FILES = '/files';
-  TOAIEngineName: TArray<String> = ['text-davinci-002', 'text-davinci-001', 'text-curie-001', 'text-babbage-001', 'text-ada-001', 'davinci',
-    'curie', 'babbage', 'ada'];
-
-type
-  TOAIEngine = (egTextDavinci002, egTextDavinci001, egTextCurie001, egTextBabbage001, egTextAda001, egDavinci, egCurie, egBabbage, egAda);
-  TOAIRequests = (orNone, rAuth, orEngines, orCompletions, orSearch, rClassifications, orAnswers, orFiles);
-  TFilePurpose = (fpAnswer, fpSearch, fpClassification, fpFineTune);
+  MLOpenAI.Types, MLOpenAI.Completions,
+  MLOpenAI.Files, MLOpenAI.Finetunes;
 
 type
   TRESTRequestOAI = class(TRESTRequest)
@@ -53,7 +39,6 @@ type
     property RequestType: TOAIRequests read FRequestType write FRequestType;
   end;
 
-  // Maybe now, we could use advanced class-like record here instead of class
 type
   TOpenAI = class(TObject)
   private
@@ -304,7 +289,7 @@ begin
   if FStatusCode = 0 then
     FStatusCode := LStatusCode;
 
-  if not (FStatusCode in [200,201]) then
+  if not(FStatusCode in [200, 201]) then
     Exit;
 
   FBodyContent := FRESTResponse.Content;
@@ -355,6 +340,7 @@ end;
 procedure TOpenAI.SetApiKey(const Value: string);
 begin
   FAPIKey := Value;
+  // FRESTRequest.Params.Clear;
   FRESTRequest.Params.AddHeader('Authorization', 'Bearer ' + FAPIKey);
   FRESTRequest.Params.ParameterByName('Authorization').Options := [poDoNotEncode];
 end;
