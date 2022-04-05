@@ -30,7 +30,8 @@ const
 
 
 type
-  TOAIEngine = (egTextDavinci002, egTextDavinci001, egTextCurie001, egTextBabbage001, egTextAda001, egDavinci, egCurie, egBabbage, egAda);
+  TOAIEngine = (egTextDavinci002 = 0, egTextDavinci001 = 1, egTextCurie001 = 2, egTextBabbage001 = 3,
+                egTextAda001 = 4, egDavinci = 5, egCurie = 6, egBabbage = 7, egAda = 8);
   TOAIRequests = (orNone, rAuth, orEngines, orCompletions, orSearch, rClassifications, orAnswers, orFiles, orFinetunes);
   TFilePurpose = (fpAnswer, fpSearch, fpClassification, fpFineTune);
 

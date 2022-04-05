@@ -99,7 +99,6 @@ type
     property Completions: TCompletions write SetCompletions;
     property BodyContent: String read FBodyContent;
     property FilePurpose: TFilePurpose read FFilePurpose write FFilePurpose;
-
   end;
 
 implementation
@@ -352,14 +351,8 @@ end;
 
 procedure TOpenAI.Execute;
 begin
-  // FRESTRequest.ClearBody;
-  // FRESTRequest.Body.Add(FPayload, TRESTContentType.ctAPPLICATION_JSON);
-  // FRESTRequest.Execute;
-  // FMemtable.Open;
-
   if not FMemtable.IsEmpty then
     FMemtable.EmptyDataSet;
-  // FMemtable.Close;
   case FRequestType of
     orCompletions:
       ExecuteCompletions();
