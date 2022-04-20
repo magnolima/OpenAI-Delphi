@@ -1,9 +1,11 @@
 # OpenAI-Delphi
 **A simple wrapper for the GPT-3 OpenAI API using Delphi.**
 
-2022-04-20 - *Update: Demo was updated and we had some fix to use of memory table, so the old engines where removed*
-2022-03-28 - *Update: just a kickoff to files and fine tunes*
-2022-03-16 - *Update: now using text-davinci-002 engine*
+2022-04-20 - *Update: Demo was updated and we had some fix to use of memory table, also the old engines where removed*
+
+2022-03-28 - Update: just a kickoff to files and fine tunes
+
+2022-03-16 - Update: now using text-davinci-002 engine
 
 
 This library should wrapper all the API requests. All the returning data will be translated into a memory table/dataset for easly of handling.
