@@ -20,7 +20,8 @@ unit MLOpenAI.Completions;
 interface
 
 uses
-   System.SysUtils, REST.Client, REST.Types, System.JSON;
+   System.SysUtils, System.Generics.Collections, REST.Client, REST.Types,
+   System.JSON;
 
 type
    TCompletions = class
@@ -37,6 +38,7 @@ type
       FPresencePenalty: Single;
       FBestOf: Integer;
       FUser: String;
+      FUserParameters: TDictionary<String, String>;
       procedure SetMaxTokens(const Value: Integer);
       procedure SetEngine(const Value: String);
       procedure SetPrompt(const Value: String);
@@ -52,6 +54,7 @@ type
       procedure SetUser(const Value: String);
    public
       constructor Create(EngineIndex: Integer);
+      destructor Destroy; override;
       property Engine: String write SetEngine;
       property Prompt: String write SetPrompt;
       property MaxTokens: Integer write SetMaxTokens;
@@ -66,12 +69,14 @@ type
       property BestOf: Integer write SetBestOf;
       procedure CreateCompletion(var ABody: String);
       property User: String read FUser write SetUser;
+      procedure AddStringParameter(const Name: String; Value: String);
    end;
 
 implementation
 
 uses
-   MLOpenAI.Core, MLOpenAI.Types;
+   MLOpenAI.Types, MLOpenAI.Core;
+
 { TCompletion }
 
 (* logit_bias and stream are not yet implemented *)
@@ -151,30 +156,31 @@ begin
    FBestOf := Value;
 end;
 
+procedure TCompletions.AddStringParameter(const Name: String; Value: String);
+begin
+   FUserParameters.TryAdd(Name, Value);
+end;
+
 constructor TCompletions.Create(EngineIndex: Integer);
 begin
-   // Set defaults
    FEngine := TOAIEngineName[EngineIndex];
    FPrompt := '';
    FMaxTokens := 16;
-   FSamplingTemperature := 1;
-   TopP := 1;
+   FSamplingTemperature := 0.5;
+   TopP := 0;
    FNumberOfCompletions := 1;
-   // FStream := False;
    FLogProbabilities := -1;
    FEcho := false;
    FStop := nil;
    FPresencePenalty := 0;
    FFrequencyPenalty := 0;
    FBestOf := 1;
-   // logit_bias = nil
+   FUserParameters := TDictionary<string, String>.Create;
 end;
 
 procedure TCompletions.CreateCompletion(var ABody: String);
-// (var ABody: TCustomRESTRequest.TBody);
 var
    AJSONObject: TJSONObject;
-   AJSONPair: TJSONPair;
    Value, Stop: String;
 begin
    AJSONObject := TJSONObject.Create;
@@ -184,6 +190,9 @@ begin
    AJSONObject.AddPair(TJSONPair.Create('top_p', TJSONNumber.Create(FTopP)));
    AJSONObject.AddPair(TJSONPair.Create('frequency_penalty', TJSONNumber.Create(FFrequencyPenalty)));
    AJSONObject.AddPair(TJSONPair.Create('presence_penalty', TJSONNumber.Create(FPresencePenalty)));
+
+   for Value in FUserParameters.Keys do
+      AJSONObject.AddPair(TJSONPair.Create(Value, FUserParameters[Value]));
 
    if not FUser.IsEmpty then
       AJSONObject.AddPair(TJSONPair.Create('user', FUser));
@@ -203,6 +212,12 @@ begin
    ABody := AJSONObject.ToJSON;
    AJSONObject.Free;
 
+end;
+
+destructor TCompletions.Destroy;
+begin
+   FUserParameters.Free;
+   inherited;
 end;
 
 end.

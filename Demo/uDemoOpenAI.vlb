@@ -14,7 +14,7 @@ Coordinates=99,77,77,33
 Coordinates=270,80,84,51
 
 []
-Coordinates=420,20,41,51
+Coordinates=0,137,44,33
 Visible=True
 
 [BindingsList1]
@@ -38,9 +38,6 @@ Coordinates=98,269,69,51
 [rbTextDavinci001]
 Coordinates=275,174,99,33
 
-[rbBabbage]
-Coordinates=644,1,68,33
-
 [Label7]
 Coordinates=177,269,46,51
 
@@ -55,9 +52,6 @@ Coordinates=30,77,53,51
 
 [TabItem1]
 Coordinates=425,365,59,33
-
-[rbAda]
-Coordinates=0,137,44,33
 
 [Label1]
 Coordinates=394,251,46,51
@@ -77,9 +71,6 @@ Coordinates=366,365,47,33
 [Label4]
 Coordinates=504,1,46,51
 
-[rbCurie]
-Coordinates=307,365,50,33
-
 [TabItem3]
 Coordinates=228,365,59,33
 
@@ -88,9 +79,6 @@ Coordinates=644,111,82,33
 
 [rbTextCurie001]
 Coordinates=644,166,89,33
-
-[rbDavinci]
-Coordinates=159,365,61,33
 
 [Edit1]
 Coordinates=207,173,40,51
