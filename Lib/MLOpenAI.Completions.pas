@@ -81,25 +81,21 @@ uses
 
 (* logit_bias and stream are not yet implemented *)
 
-// max_tokens integer Optional Defaults to 16
 procedure TCompletions.SetMaxTokens(const Value: Integer);
 begin
    FMaxTokens := Value;
 end;
 
-// top_p number Optional Defaults to 1
 procedure TCompletions.SetNucleusSampling(const Value: Single);
 begin
    FTopP := Value;
 end;
 
-// n integer Optional Defaults to 1
 procedure TCompletions.SetNumberOfCompletions(const Value: Integer);
 begin
    FNumberOfCompletions := Value;
 end;
 
-// stream boolean Optional Defaults to <|endoftext|>
 procedure TCompletions.SetPresencePenalty(const Value: Single);
 begin
    FPresencePenalty := Value;
@@ -110,13 +106,11 @@ begin
    FPrompt := Value;
 end;
 
-// temperature number Optional Defaults to 1
 procedure TCompletions.SetSamplingTemperature(const Value: Single);
 begin
    FSamplingTemperature := Value;
 end;
 
-// stop string or array Optional Defaults to null
 procedure TCompletions.SetStop(const Value: TArray<String>);
 begin
    FStop := Value;
@@ -127,14 +121,11 @@ begin
    FUser := Value;
 end;
 
-// logprobs integer Optional Defaults to null
-// setting -1 will render as null default
 procedure TCompletions.SetLogProbabilities(const Value: Integer);
 begin
    FLogProbabilities := Value;
 end;
 
-// echo boolean Optional Defaults to false
 procedure TCompletions.SetEcho(const Value: Boolean);
 begin
    FEcho := Value;
@@ -150,7 +141,6 @@ begin
    FPresencePenalty := Value;
 end;
 
-// best_of integer Optional Defaults to 1
 procedure TCompletions.SetBestOf(const Value: Integer);
 begin
    FBestOf := Value;

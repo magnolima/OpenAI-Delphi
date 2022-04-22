@@ -44,7 +44,6 @@ type
    TfrmDemoOpenAI = class(TForm)
       ToolBar1: TToolBar;
       SpeedButton1: TSpeedButton;
-      Memo1: TMemo;
       FDMemTable1: TFDMemTable;
       DataSource1: TDataSource;
       BindingsList1: TBindingsList;
@@ -62,13 +61,6 @@ type
       TabItem3: TTabItem;
       Label3: TLabel;
       TabItem4: TTabItem;
-      nbMaxTokens: TNumberBox;
-      Label4: TLabel;
-      nbTemperature: TNumberBox;
-      Label5: TLabel;
-      nbTopP: TNumberBox;
-      Label6: TLabel;
-      nbLogProb: TNumberBox;
       Label7: TLabel;
       rbTextAda001: TRadioButton;
       Edit1: TEdit;
@@ -94,6 +86,18 @@ type
       ToolBar2: TToolBar;
       lbEngine: TLabel;
       rbTextDavinci002: TRadioButton;
+      nbMaxTokens: TTrackBar;
+      Label12: TLabel;
+      nbTemperature: TTrackBar;
+      Label13: TLabel;
+      nbTopP: TTrackBar;
+      Label14: TLabel;
+      Label4: TLabel;
+      Label5: TLabel;
+      Label6: TLabel;
+      nbLogProb: TTrackBar;
+      Label15: TLabel;
+    Memo1: TMemo;
       procedure FormCreate(Sender: TObject);
       procedure FormDestroy(Sender: TObject);
       procedure SpeedButton1Click(Sender: TObject);
@@ -109,6 +113,10 @@ type
       procedure RadioButton3Change(Sender: TObject);
       procedure Button3Click(Sender: TObject);
       procedure RadioButton4Change(Sender: TObject);
+      procedure nbMaxTokensChange(Sender: TObject);
+      procedure nbTemperatureChange(Sender: TObject);
+      procedure nbTopPChange(Sender: TObject);
+      procedure nbLogProbChange(Sender: TObject);
    private
       procedure InitCompletions;
       procedure InitFile;
@@ -168,6 +176,11 @@ begin
 
 end;
 
+function GetStops(Text: String): TArray<String>;
+begin
+   Result := SliceString(Text, ';');
+end;
+
 procedure TfrmDemoOpenAI.OnOpenAIError(Sender: TObject);
 begin
    Memo2.Lines.Add('Error ' + OpenAI.StatusCode.ToString + ' - ' + OpenAI.ErrorMessage);
@@ -175,9 +188,12 @@ end;
 
 procedure TfrmDemoOpenAI.FormCreate(Sender: TObject);
 begin
+   TabControl1.ActiveTab := TabItem1;
    NameOfEngines := TOAIEngineName;
+
    // Store your key safely. Never share or expose it!
    OpenAI := TOpenAI.Create(FDMemTable1, APIKey_Filename);
+
    OpenAI.Endpoint := OpenAI_PATH;
    OpenAI.Engine := TOAIEngine.egTextCurie001;
    OpenAI.OnResponse := OnOpenAIResponse;
@@ -219,6 +235,7 @@ procedure TfrmDemoOpenAI.OnOpenAIResponse(Sender: TObject);
 var
    field: TField;
    Engine: TPair<string, string>;
+   SanitizedResponse: String;
 begin
    Button1.Enabled := True;
    AniIndicator1.Enabled := False;
@@ -226,9 +243,17 @@ begin
    // We can get the response directly using GetChoicesResult property as text
    // or, we can read from the memtable
    //
-
    if OpenAI.RequestType = TOAIRequests.orCompletions then
+   begin
       Memo2.Lines.Add(Trim(OpenAI.GetChoicesResult));
+      Memo2.Lines.Add(StringOfChar('-', 40));
+
+      // Let's sanitize this result for better readability
+      SanitizedResponse := TOpenAI.Sanitize(GetStops(Edit1.Text), OpenAI.GetChoicesResult);
+
+      Memo2.Lines.Add(SanitizedResponse);
+      Memo2.Lines.Add(StringOfChar('-', 40));
+   end;
 
    if OpenAI.RequestType = TOAIRequests.orEngines then
    begin
@@ -242,8 +267,8 @@ begin
       begin
          Memo2.Lines.Add('{');
          for field in FDMemTable1.Fields do
-            Memo2.Lines.Add(field.FieldName + ': "' + Trim(field.AsString) + '"' +
-              IfThen(field.Index = FDMemTable1.Fields.Count-1, '', ','));
+            Memo2.Lines.Add(field.FieldName + ': "' + Trim(field.AsString) + '"' + IfThen(field.Index = FDMemTable1.Fields.Count - 1,
+              '', ','));
          Memo2.Lines.Add('}');
          FDMemTable1.Next;
       end;
@@ -311,12 +336,6 @@ var
    ACompletions: TCompletions;
    I: Integer;
    sPrompt: String;
-
-   function getStops(Text: String): TArray<String>;
-   begin
-      Result := SliceString(Text, ';');
-   end;
-
 begin
 
    sPrompt := Memo1.Text.Trim;
@@ -329,14 +348,15 @@ begin
 
    ACompletions := TCompletions.Create(EngineIndex);
    ACompletions.MaxTokens := Round(nbMaxTokens.Value);
-   ACompletions.SamplingTemperature := 1;
-   ACompletions.TopP := 1;
-   ACompletions.Stop := getStops(Edit1.Text);
+   ACompletions.SamplingTemperature := nbTemperature.Value;
+   ACompletions.TopP := nbTopP.Value;
+   ACompletions.Stop := GetStops(Edit1.Text);
    ACompletions.Prompt := sPrompt;
    ACompletions.LogProbabilities := -1; // -1 will set as null default
    ACompletions.User := 'Delphi-OpenAIDemo';
-   OpenAI.Completions := ACompletions;
+   ACompletions := TCompletions.Create(EngineIndex);
 
+   OpenAI.Completions := ACompletions;
    // Legacy engines were removed
    case EngineIndex of
       0:
@@ -360,6 +380,26 @@ end;
 procedure TfrmDemoOpenAI.InitFile;
 begin
    // WIP
+end;
+
+procedure TfrmDemoOpenAI.nbLogProbChange(Sender: TObject);
+begin
+   Label15.Text := Round(nbLogProb.Value).ToString;
+end;
+
+procedure TfrmDemoOpenAI.nbMaxTokensChange(Sender: TObject);
+begin
+   Label12.Text := Round(nbMaxTokens.Value).ToString;
+end;
+
+procedure TfrmDemoOpenAI.nbTemperatureChange(Sender: TObject);
+begin
+   Label13.Text := Format('%0.2f', [nbTemperature.Value]);
+end;
+
+procedure TfrmDemoOpenAI.nbTopPChange(Sender: TObject);
+begin
+   Label14.Text := Format('%0.2f', [nbTopP.Value]);
 end;
 
 procedure TfrmDemoOpenAI.Button1Click(Sender: TObject);

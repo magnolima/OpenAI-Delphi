@@ -1,4 +1,4 @@
-(*
+﻿(*
   (C)2021-2022 Magno Lima - www.MagnumLabs.com.br - Version 1.0
 
   Delphi libraries for using OpenAI's GPT-3 api
@@ -79,6 +79,7 @@ type
       constructor Create(var MemTable: TFDMemTable; const APIFileName: String = '');
       destructor Destroy; Override;
       property ErrorMessage: String read FErrorMessage;
+      class function Sanitize(const Stops: TArray<String>; Text: String): String; static;
    published
       procedure Execute;
       procedure Stop;
@@ -132,6 +133,40 @@ begin
       PStart := PLine;
    end;
 
+end;
+
+class function TOpenAI.Sanitize(const Stops: TArray<String>; Text: String): String;
+var
+   Temp, Stop: String;
+   Lines: TArray<String>;
+begin
+
+   Temp := StringReplace(Text, #10#10, #13, [rfReplaceAll]);
+   for Stop in Stops do
+      Temp := StringReplace(Temp, trim(Stop), '', [rfIgnoreCase]);
+   Lines := Temp.Split([#10#10, #13]);
+
+   Temp := '';
+   Result := '';
+   if Length(Lines) > 1 then
+      for Temp in Lines do
+      begin
+         if trim(Temp).Length > 1 then
+         begin
+{$IF DEFINE(ANDROID)}
+            if Temp[0] in [',', '.', ';'] then
+{$ELSE}
+            if Temp[1] in [',', '.', ';'] then
+{$ENDIF}
+               Result := trim(Temp.Substring(2))
+            else
+               Result := Result + trim(Temp) + #10;
+         end;
+      end
+   else
+      Result := Lines[0];
+
+   Result := trim(Result);
 end;
 
 procedure TOpenAI.CreateRESTRespose;

@@ -4,9 +4,6 @@ Coordinates=66,146,58,33
 [SpeedButton1]
 Coordinates=119,10,84,51
 
-[Memo1]
-Coordinates=170,78,49,51
-
 [DataSource1]
 Coordinates=99,77,77,33
 
@@ -14,7 +11,7 @@ Coordinates=99,77,77,33
 Coordinates=270,80,84,51
 
 []
-Coordinates=0,137,44,33
+Coordinates=170,78,49,51
 Visible=True
 
 [BindingsList1]
@@ -23,17 +20,11 @@ Coordinates=265,1,82,33
 [TabItem2]
 Coordinates=504,309,59,33
 
-[nbTopP]
-Coordinates=300,10,52,51
-
 [TabItem4]
 Coordinates=504,364,59,33
 
 [SpeedButton2]
 Coordinates=0,0,84,51
-
-[nbLogProb]
-Coordinates=98,269,69,51
 
 [rbTextDavinci001]
 Coordinates=275,174,99,33
@@ -56,9 +47,6 @@ Coordinates=425,365,59,33
 [Label1]
 Coordinates=394,251,46,51
 
-[Label5]
-Coordinates=394,97,46,51
-
 [rbTextBabbage001]
 Coordinates=19,205,106,33
 
@@ -67,9 +55,6 @@ Coordinates=504,232,49,51
 
 [Panel1]
 Coordinates=366,365,47,33
-
-[Label4]
-Coordinates=504,1,46,51
 
 [TabItem3]
 Coordinates=228,365,59,33
@@ -83,9 +68,6 @@ Coordinates=644,166,89,33
 [Edit1]
 Coordinates=207,173,40,51
 
-[Label6]
-Coordinates=335,269,46,51
-
 [AniIndicator1]
 Coordinates=644,221,80,33
 
@@ -98,12 +80,6 @@ Coordinates=394,174,46,51
 [Label2]
 Coordinates=504,155,46,51
 
-[nbMaxTokens]
-Coordinates=226,109,83,51
-
 [Image1]
 Coordinates=39,269,49,51
-
-[nbTemperature]
-Coordinates=504,78,89,51
 
