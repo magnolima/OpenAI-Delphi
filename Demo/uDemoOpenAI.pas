@@ -354,9 +354,7 @@ begin
    ACompletions.Prompt := sPrompt;
    ACompletions.LogProbabilities := -1; // -1 will set as null default
    ACompletions.User := 'Delphi-OpenAIDemo';
-   ACompletions := TCompletions.Create(EngineIndex);
 
-   OpenAI.Completions := ACompletions;
    // Legacy engines were removed
    case EngineIndex of
       0:
@@ -370,9 +368,8 @@ begin
       4:
          OpenAI.Engine := TOAIEngine.egTextAda001;
    end;
-
-   OpenAI.RequestType := orCompletions;
    OpenAI.Completions := ACompletions;
+   OpenAI.RequestType := orCompletions;
    OpenAI.Endpoint := OpenAI_PATH + '/engines/' + NameOfEngines[EngineIndex];
 
 end;
