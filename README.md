@@ -2,7 +2,8 @@
 **A simple wrapper for the GPT-3 OpenAI API using Delphi.**
 
 2022-04-24 - **Fixed: if Stop parameter for Completions is empty we're are not sending it**
-           - Small, but important, bug fixes in the demo
+           
+           There is a small, but important, bug fix in the demo
 
 2022-04-24 - Fixed: Stop parameter for Completions is now being sent as array[]
 
