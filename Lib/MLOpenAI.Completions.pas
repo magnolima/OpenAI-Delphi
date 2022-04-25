@@ -188,9 +188,9 @@ begin
    if not FUser.IsEmpty then
       AJSONObject.AddPair(TJSONPair.Create('user', FUser));
 
-   JSONArray := TJSONArray.Create;
    if Length(Stop) > 0 then
    begin
+      JSONArray := TJSONArray.Create;
       for Stop in FStop do
          JSONArray.Add(Stop);
       AJSONObject.AddPair(TJSONPair.Create('stop', JSONArray));
