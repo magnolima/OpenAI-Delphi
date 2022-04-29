@@ -56,19 +56,19 @@ type
       constructor Create(EngineIndex: Integer);
       destructor Destroy; override;
       property Engine: String write SetEngine;
-      property Prompt: String write SetPrompt;
-      property MaxTokens: Integer write SetMaxTokens;
-      property SamplingTemperature: Single write SetSamplingTemperature;
-      property TopP: Single write SetNucleusSampling;
-      property NumberOfCompletions: Integer write SetNumberOfCompletions;
-      property LogProbabilities: Integer write SetLogProbabilities;
-      property Echo: Boolean write SetEcho;
-      property Stop: TArray<String> write SetStop;
-      property FrequencyPenalty: Single write SetFrequencyPenalty;
-      property PresencePenalty: Single write SetPresencePenalty;
-      property BestOf: Integer write SetBestOf;
-      procedure CreateCompletion(var ABody: String);
+      property Prompt: String read FPrompt write SetPrompt;
+      property MaxTokens: Integer read FMaxTokens write SetMaxTokens;
+      property SamplingTemperature: Single read FSamplingTemperature write SetSamplingTemperature;
+      property TopP: Single read FTopP write SetNucleusSampling;
+      property NumberOfCompletions: Integer read FNumberOfCompletions write SetNumberOfCompletions;
+      property LogProbabilities: Integer read FLogProbabilities write SetLogProbabilities;
+      property Echo: Boolean read FEcho write SetEcho;
+      property Stop: TArray<String> read FStop write SetStop;
+      property FrequencyPenalty: Single read FFrequencyPenalty write SetFrequencyPenalty;
+      property PresencePenalty: Single read FPresencePenalty write SetPresencePenalty;
+      property BestOf: Integer read FBestOf write SetBestOf;
       property User: String read FUser write SetUser;
+      procedure CreateCompletion(var ABody: String);
       procedure AddStringParameter(const Name: String; Value: String);
    end;
 
@@ -138,7 +138,7 @@ end;
 
 procedure TCompletions.SetFrequencyPenalty(const Value: Single);
 begin
-   FPresencePenalty := Value;
+   FFrequencyPenalty := Value;
 end;
 
 procedure TCompletions.SetBestOf(const Value: Integer);
@@ -175,12 +175,12 @@ var
    Value, Stop: String;
 begin
    AJSONObject := TJSONObject.Create;
-   AJSONObject.AddPair(TJSONPair.Create('prompt', FPrompt));
-   AJSONObject.AddPair(TJSONPair.Create('temperature', TJSONNumber.Create(FSamplingTemperature)));
+	AJSONObject.AddPair(TJSONPair.Create('prompt', FPrompt));
+   AJSONObject.AddPair(TJSONPair.Create('temperature', TJSONNumber.Create(Trunc(FSamplingTemperature * 100) / 100)));
    AJSONObject.AddPair(TJSONPair.Create('max_tokens', TJSONNumber.Create(FMaxTokens)));
    AJSONObject.AddPair(TJSONPair.Create('top_p', TJSONNumber.Create(FTopP)));
-   AJSONObject.AddPair(TJSONPair.Create('frequency_penalty', TJSONNumber.Create(FFrequencyPenalty)));
-   AJSONObject.AddPair(TJSONPair.Create('presence_penalty', TJSONNumber.Create(FPresencePenalty)));
+	AJSONObject.AddPair(TJSONPair.Create('frequency_penalty', TJSONNumber.Create(Trunc(FFrequencyPenalty * 100) / 100)));
+	AJSONObject.AddPair(TJSONPair.Create('presence_penalty', TJSONNumber.Create(Trunc(FPresencePenalty * 100) / 100)));
 
    for Value in FUserParameters.Keys do
       AJSONObject.AddPair(TJSONPair.Create(Value, FUserParameters[Value]));
@@ -188,10 +188,10 @@ begin
    if not FUser.IsEmpty then
       AJSONObject.AddPair(TJSONPair.Create('user', FUser));
 
-   if Length(Stop) > 0 then
+	if Length(FStop) > 0 then
    begin
       JSONArray := TJSONArray.Create;
-      for Stop in FStop do
+		for Stop in FStop do
          JSONArray.Add(Stop);
       AJSONObject.AddPair(TJSONPair.Create('stop', JSONArray));
    end;
@@ -205,8 +205,8 @@ begin
    // else
    // AJSONObject.AddPair(TJSONPair.Create('logprobs', TJSONNumber.Create(FLogProbabilities)));
 {$ENDREGION}
-   ABody := AJSONObject.ToJSON;
-   AJSONObject.Free;
+	ABody := UTF8Decode(AJSONObject.ToJSON);
+	AJSONObject.Free;
 
 end;
 

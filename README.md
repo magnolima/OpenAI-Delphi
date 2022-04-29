@@ -1,13 +1,7 @@
 # OpenAI-Delphi
 **A simple wrapper for the GPT-3 OpenAI API using Delphi.**
 
-2022-04-24 - **Fixed: if Stop parameter for Completions is empty we're are not sending it**
-           
-           There is a small, but important, bug fix in the demo
-
-2022-04-24 - Fixed: Stop parameter for Completions is now being sent as array[]
-
-2022-04-20 - Update: Demo was updated and we had some fix to use of memory table, also the old engines where removed
+2022-04-29 - Fixed: Stop and frequency penalty parameteres were bugged
 
 This library should wrapper all the API requests. All the returning data will be translated into a memory table/dataset for easly of handling.
 
