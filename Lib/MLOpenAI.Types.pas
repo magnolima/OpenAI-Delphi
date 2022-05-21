@@ -18,24 +18,32 @@ unit MLOpenAi.Types;
 interface
 
 const
-  OAI_ENDPOINT = 'https://api.openai.com/v1';
-  OAI_GET_ENGINES = '/engines';
-  OAI_GET_COMPLETION = '/completions';
-  OAI_SEARCH = '/search';
-  OAI_CLASSIFICATIONS = '/classifications';
-  OAI_ANSWER = '/answers';
-  OAI_FILES = '/files';
-  OAI_FINETUNES = '/fine-tunes';
-  TOAIEngineName: TArray<String> = ['text-davinci-002', 'text-davinci-001', 'text-curie-001',
-                                    'text-babbage-001', 'text-ada-001', 'davinci',
-                                    'curie', 'babbage', 'ada'];
+	OAI_ENDPOINT = 'https://api.openai.com/v1';
+	OAI_GET_ENGINES = '/engines';
+	OAI_GET_COMPLETION = '/completions';
+	OAI_SEARCH = '/search';
+	OAI_CLASSIFICATIONS = '/classifications';
+	OAI_ANSWER = '/answers';
+	OAI_FILES = '/files';
+	OAI_FINETUNES = '/fine-tunes';
+	TOAIEngineName: TArray<String> = ['text-davinci-002', 'text-davinci-001', 'text-curie-001',
+	  'text-babbage-001', 'text-ada-001', 'davinci', 'curie', 'babbage', 'ada'];
+
+	TFilePurposeName: TArray<String> = ['answer', 'search', 'classification', 'finetune'];
 
 type
-  TOAIEngine = (egTextDavinci002 = 0, egTextDavinci001 = 1, egTextCurie001 = 2,
-                egTextBabbage001 = 3, egTextAda001 = 4, egDavinci = 5,
-                egCurie = 6, egBabbage = 7, egAda = 8);
-  TOAIRequests = (orNone, rAuth, orEngines, orCompletions, orSearch, rClassifications, orAnswers, orFiles, orFinetunes);
-  TFilePurpose = (fpAnswer, fpSearch, fpClassification, fpFineTune);
+	TOAIEngine = (egTextDavinci002 = 0, egTextDavinci001 = 1, egTextCurie001 = 2, egTextBabbage001 = 3,
+					  egTextAda001 = 4, egDavinci = 5, egCurie = 6, egBabbage = 7, egAda = 8);
+	TOAIRequests = (orNone, rAuth, orEngines, orCompletions, orSearch, rClassifications, orAnswers,
+						 orFiles, orFinetunes);
+	TFilePurpose = (fpAnswer = 0, fpSearch = 1, fpClassification = 2, fpFineTune = 3);
+
+type
+	TFileDescription = record
+		Id: Integer;
+		Filename: String;
+		Purpose: TFilePurpose;
+	end;
 
 implementation
 

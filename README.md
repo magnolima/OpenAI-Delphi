@@ -1,7 +1,7 @@
 # OpenAI-Delphi
 **A simple wrapper for the GPT-3 OpenAI API using Delphi.**
 
-2022-04-29 - Fixed: Stop and frequency penalty parameteres were bugged
+2022-05-21 - Some more fixes and some changes in preparation to the file handling.
 
 This library should wrapper all the API requests. All the returning data will be translated into a memory table/dataset for easly of handling.
 

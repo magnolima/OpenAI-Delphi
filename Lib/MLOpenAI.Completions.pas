@@ -205,7 +205,7 @@ begin
    // else
    // AJSONObject.AddPair(TJSONPair.Create('logprobs', TJSONNumber.Create(FLogProbabilities)));
 {$ENDREGION}
-	ABody := UTF8Decode(AJSONObject.ToJSON);
+	ABody := UTF8ToString(AJSONObject.ToJSON);
 	AJSONObject.Free;
 
 end;
