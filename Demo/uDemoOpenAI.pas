@@ -33,8 +33,8 @@ uses
 	Data.DB, FMX.Grid, FireDAC.Comp.DataSet, FireDAC.Comp.Client, FMX.ScrollBox,
 	FMX.Memo, FMX.Edit, Data.Bind.ObjectScope, REST.Client, REST.Response.Adapter,
 	FMX.Objects, FMX.TabControl, FMX.EditBox, FMX.NumberBox, FMX.Memo.Types,
-	REST.Types, System.Generics.Collections,
-	MLOpenAI.Types;
+	REST.Types, System.Generics.Collections, 	MLOpenAI.Core,
+	MLOpenAI.Types, MLOpenAI.Completions;
 
 const
 	APIKey_Filename = '.\openai.key';
@@ -118,9 +118,12 @@ type
 		procedure nbTopPChange(Sender: TObject);
 		procedure nbLogProbChange(Sender: TObject);
 	private
+		FEngine: TOAIEngine;
+		FOpenAI: TOpenAI;
 		procedure InitCompletions;
 		procedure InitFile;
 		procedure OnOpenAIError(Sender: TObject);
+    procedure Submit;
 		{ Private declarations }
 	public
 		{ Public declarations }
@@ -133,15 +136,13 @@ var
 	EngineIndex: Integer;
 	NameOfEngines: TArray<String>;
 	FilePurpose: TFilePurpose;
+	//ACompletions: TCompletions;
 
 implementation
 
 uses
-	System.JSON,
-	MLOpenAI.Core, MLOpenAI.Completions;
+	System.JSON;
 
-var
-	OpenAI: TOpenAI;
 
 {$R *.fmx}
 
@@ -183,27 +184,31 @@ end;
 
 procedure TfrmDemoOpenAI.OnOpenAIError(Sender: TObject);
 begin
-	Memo2.Lines.Add('Error ' + OpenAI.StatusCode.ToString + ' - ' + OpenAI.ErrorMessage);
+	Memo2.Lines.Add('Error ' + FOpenAI.StatusCode.ToString + ' - ' + FOpenAI.ErrorMessage);
 end;
 
 procedure TfrmDemoOpenAI.FormCreate(Sender: TObject);
 begin
+	ReportMemoryLeaksOnShutdown := true;
 	TabControl1.ActiveTab := TabItem1;
 	NameOfEngines := TOAIEngineName;
 
 	// Store your key safely. Never share or expose it!
-	OpenAI := TOpenAI.Create(FDMemTable1, APIKey_Filename);
+	FOpenAI := TOpenAI.Create(FDMemTable1, APIKey_Filename);
 
-	OpenAI.Endpoint := OpenAI_PATH;
-	OpenAI.Engine := TOAIEngine.egTextCurie001;
-	OpenAI.OnResponse := OnOpenAIResponse;
-	OpenAI.OnError := OnOpenAIError;
-	EngineIndex := Ord(OpenAI.Engine);
+	FOpenAI.Endpoint := OpenAI_PATH;
+	FOpenAI.Engine := TOAIEngine.egTextCurie001;
+	FOpenAI.OnResponse := OnOpenAIResponse;
+	FOpenAI.OnError := OnOpenAIError;
+	EngineIndex := Ord(FOpenAI.Engine);
+	FEngine := FOpenAI.Engine;
+	//ACompletions := TCompletions.Create(EngineIndex);
 end;
 
 procedure TfrmDemoOpenAI.FormDestroy(Sender: TObject);
 begin
-	OpenAI.DisposeOf;
+	//ACompletions.Free;
+	FOpenAI.Free;
 end;
 
 procedure TfrmDemoOpenAI.Button2Click(Sender: TObject);
@@ -213,21 +218,21 @@ end;
 
 procedure TfrmDemoOpenAI.Button3Click(Sender: TObject);
 var
-  AFileDescription: TFileDescription;
+	AFileDescription: TFileDescription;
 begin
 	if OpenDialog1.Execute then
 	begin
 		Label9.Text := OpenDialog1.FileName;
 		AFileDescription.FileName := OpenDialog1.FileName;
 		AFileDescription.Purpose := FilePurpose;
-		OpenAI.FileDescription := AFileDescription;
-		OpenAI.Upload;
+		FOpenAI.FileDescription := AFileDescription;
+		FOpenAI.Upload;
 	end;
 end;
 
 procedure TfrmDemoOpenAI.FormShow(Sender: TObject);
 begin
-	OpenAI.RequestType := orEngines;
+	FOpenAI.RequestType := orEngines;
 	lbEngine.Text := 'Engine: ' + NameOfEngines[Ord(EngineIndex)];
 end;
 
@@ -245,27 +250,27 @@ var
 	Engine: TPair<string, string>;
 	SanitizedResponse: String;
 begin
-	Button1.Enabled := True;
+	Button1.Enabled := true;
 	AniIndicator1.Enabled := False;
 
 	// We can get the response directly using GetChoicesResult property as text
 	// or, we can read from the memtable
 	//
-	if OpenAI.RequestType = TOAIRequests.orCompletions then
+	if FOpenAI.RequestType = TOAIRequests.orCompletions then
 	begin
-		Memo2.Lines.Add(Trim(OpenAI.GetChoicesResult));
+		Memo2.Lines.Add(Trim(FOpenAI.GetChoicesResult));
 		Memo2.Lines.Add(StringOfChar('-', 40));
 
 		// Let's sanitize this result for better readability
-		SanitizedResponse := TOpenAI.Sanitize(GetStops(Edit1.Text), OpenAI.GetChoicesResult);
-
+		SanitizedResponse := TOpenAI.Sanitize(GetStops(Edit1.Text), FOpenAI.GetChoicesResult);
+      FOpenAI.SaveToFile('c:\temp\resposta.txt');
 		Memo2.Lines.Add(SanitizedResponse);
 		Memo2.Lines.Add(StringOfChar('-', 40));
 	end;
 
-	if OpenAI.RequestType = TOAIRequests.orEngines then
+	if FOpenAI.RequestType = TOAIRequests.orEngines then
 	begin
-		for Engine in OpenAI.AvailableEngines do
+		for Engine in FOpenAI.AvailableEngines do
 			Memo2.Lines.Add(Engine.Key + ' = ' + Trim(Engine.Value))
 	end
 	else
@@ -313,7 +318,7 @@ end;
 procedure TfrmDemoOpenAI.SpeedButton1Click(Sender: TObject);
 begin
 	Label2.Text := 'Engines';
-	OpenAI.RequestType := orEngines;
+	FOpenAI.RequestType := orEngines;
 	TabControl1.TabIndex := 0;
 end;
 
@@ -321,7 +326,7 @@ end;
 procedure TfrmDemoOpenAI.SpeedButton2Click(Sender: TObject);
 begin
 	Label2.Text := 'Completions';
-	OpenAI.RequestType := orCompletions;
+	FOpenAI.RequestType := orCompletions;
 	TabControl1.TabIndex := 1;
 end;
 
@@ -329,19 +334,18 @@ procedure TfrmDemoOpenAI.SpeedButton3Click(Sender: TObject);
 begin
 	Label2.Text := 'Searches';
 	TabControl1.TabIndex := 2;
-	OpenAI.RequestType := orSearch;
+	FOpenAI.RequestType := orSearch;
 end;
 
 procedure TfrmDemoOpenAI.SpeedButton4Click(Sender: TObject);
 begin
 	Label2.Text := 'Files';
 	TabControl1.TabIndex := 3;
-	OpenAI.RequestType := orFiles;
+	FOpenAI.RequestType := orFiles;
 end;
 
 procedure TfrmDemoOpenAI.InitCompletions;
 var
-	ACompletions: TCompletions;
 	sPrompt: String;
 begin
 
@@ -352,9 +356,17 @@ begin
 		ShowMessage('A prompt text must be supplied');
 		Exit;
 	end;
-
-	ACompletions := TCompletions.Create(EngineIndex);
-	ACompletions.MaxTokens := Round(nbMaxTokens.Value);
+  FOpenAI.Engine := FEngine;
+  FOpenAI.RequestType := orCompletions;
+  FOpenAI.Endpoint := OpenAI_PATH + '/engines/' + FEngine.ToString;
+  FOpenAI.Completions.MaxTokens := Round(nbMaxTokens.Value);
+  FOpenAI.Completions.SamplingTemperature := nbTemperature.Value;
+  FOpenAI.Completions.TopP := nbTopP.Value;
+  FOpenAI.Completions.Stop := GetStops(Edit1.Text);
+  FOpenAI.Completions.Prompt := sPrompt;
+  FOpenAI.Completions.LogProbabilities := -1; // -1 will set as null default
+  FOpenAI.Completions.User := 'Delphi-OpenAIDemo';
+{	ACompletions.MaxTokens := Round(nbMaxTokens.Value);
 	ACompletions.SamplingTemperature := nbTemperature.Value;
 	ACompletions.TopP := nbTopP.Value;
 	ACompletions.Stop := GetStops(Edit1.Text);
@@ -378,7 +390,7 @@ begin
 	OpenAI.Completions := ACompletions;
 	OpenAI.RequestType := orCompletions;
 	OpenAI.Endpoint := OpenAI_PATH + '/engines/' + NameOfEngines[EngineIndex];
-
+}
 end;
 
 procedure TfrmDemoOpenAI.InitFile;
@@ -408,44 +420,49 @@ end;
 
 procedure TfrmDemoOpenAI.Button1Click(Sender: TObject);
 begin
-	if OpenAI.APIKey.IsEmpty then
+	Submit;
+end;
+
+procedure TfrmDemoOpenAI.Submit;
+begin
+	if FOpenAI.APIKey.IsEmpty then
 	begin
 		Memo2.Lines.Add('API key is missing');
 		Exit;
 	end;
 
-	if (OpenAI.RequestType = orFiles) and (OpenDialog1.FileName = '') then
+	if (FOpenAI.RequestType = orFiles) and (OpenDialog1.FileName = '') then
 	begin
 		Memo2.Lines.Add('Choose a file to upload');
 		Exit;
 	end;
 
-	if (OpenAI.RequestType = orCompletions) and (Memo1.Text.IsEmpty) then
+	if (FOpenAI.RequestType = orCompletions) and (Memo1.Text.IsEmpty) then
 	begin
 		Memo2.Lines.Add('Nothing to do here...');
 		Exit;
 	end;
 
-	if OpenAI.RequestType = orNone then
+	if FOpenAI.RequestType = orNone then
 	begin
 		Memo2.Lines.Add('Choose a request type.');
 		Exit;
 	end;
 
 	Button1.Enabled := False;
-	AniIndicator1.Enabled := True;
-	AniIndicator1.Visible := True;
+	AniIndicator1.Enabled := true;
+	AniIndicator1.Visible := true;
 
 	TThread.CreateAnonymousThread(
 		procedure
 		begin
 
 			try
-				case OpenAI.RequestType of
+				case FOpenAI.RequestType of
 					orEngines:
 						begin
-							OpenAI.Endpoint := OpenAI_PATH;
-							OpenAI.GetEngines();
+							FOpenAI.Endpoint := OpenAI_PATH;
+							FOpenAI.GetEngines();
 							Exit;
 						end;
 					orCompletions:
@@ -455,15 +472,15 @@ begin
 				end;
 
 				try
-					Memo2.Lines.Add(OpenAI.Endpoint);
-					OpenAI.Execute;
+					Memo2.Lines.Add(FOpenAI.Endpoint);
+					FOpenAI.Execute;
 				except
 					on E: Exception do
 						Memo2.Lines.Add(E.Message)
 				end;
 
 			finally
-				Button1.Enabled := True;
+				Button1.Enabled := true;
 				AniIndicator1.Enabled := False;
 				AniIndicator1.Visible := False;
 			end;

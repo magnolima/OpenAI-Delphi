@@ -63,12 +63,13 @@ type
 		FMemtable: TFDMemTable;
 		FCompletions: TCompletions;
 		FStatusCode: Integer;
+    FFilePurpose: TFilePurpose;
 		procedure readEngines;
 		procedure SetEndPoint(const Value: String);
 		procedure SetApiKey(const Value: string);
 		procedure SetOrganization(const Value: String);
 		procedure SetEngine(const Value: TOAIEngine);
-		procedure SetCompletions(const Value: TCompletions);
+		//procedure SetCompletions(const Value: TCompletions);
 		procedure CreateRESTRespose;
 		procedure CreateRESTClient;
 		procedure CreateRESTRequest;
@@ -76,7 +77,7 @@ type
 		procedure HttpRequestError(Sender: TCustomRESTRequest);
 		procedure HttpClientError(Sender: TCustomRESTClient);
 		procedure SetFileDescription(const Value: TFileDescription);
-	 procedure SetAuthorization;
+		procedure SetAuthorization;
 	public
 		constructor Create(var MemTable: TFDMemTable; const APIFileName: String = '');
 		destructor Destroy; Override;
@@ -84,11 +85,13 @@ type
 		class function Sanitize(const Stops: TArray<String>; Text: String): String; static;
 	published
 		procedure Execute;
+		procedure ExecuteAsync(pProcEndExec: TProc; pProcError: TProc<string>);
 		procedure Stop;
 		procedure GetEngines;
 		function GetChoicesResult: String;
+      function GetPersonChoicesResult: string;
 		procedure AfterExecute(Sender: TCustomRESTRequest);
-      procedure Upload;
+		procedure Upload;
 		property OnResponse: TNotifyEvent read FOnResponse write FOnResponse;
 		property OnError: TNotifyEvent read FOnError write FOnError;
 		property StatusCode: Integer read FStatusCode;
@@ -98,9 +101,12 @@ type
 		property APIKey: String read FAPIKey write SetApiKey;
 		property AvailableEngines: TDictionary<String, String> read FEnginesList;
 		property RequestType: TOAIRequests read FRequestType write FRequestType;
-		property Completions: TCompletions write SetCompletions;
+		//property Completions: TCompletions write SetCompletions;
+		property Completions: TCompletions read FCompletions;
 		property BodyContent: String read FBodyContent;
 		property FileDescription: TFileDescription read FFileDescription write SetFileDescription;
+		property FilePurpose: TFilePurpose read FFilePurpose write FFilePurpose;
+		procedure SaveToFile(const Filename: String);
 	end;
 
 implementation
@@ -172,6 +178,14 @@ begin
 	Result := trim(Result);
 end;
 
+procedure TOpenAI.SaveToFile(const Filename: String);
+var
+	SanitizedResponse: String;
+begin
+	SanitizedResponse := TOpenAI.Sanitize([''], Self.GetChoicesResult);
+	Tfile.WriteAllText(Filename, SanitizedResponse);
+end;
+
 procedure TOpenAI.CreateRESTRespose;
 begin
 	FAcceptType := 'application/json';
@@ -212,16 +226,14 @@ begin
 	FErrorMessage := '';
 	FOnResponse := nil;
 	FMemtable := MemTable;
-	//
+	FCompletions := TCompletions.Create(FEngine);
 	CreateRESTRespose();
-	//
 	CreateRESTClient();
-	//
 	CreateRESTRequest();
 
 	if not APIFileName.IsEmpty and FileExists(APIFileName) then
 	begin
-		FAPIKey := TFile.ReadAllText(APIFileName);
+		FAPIKey := Tfile.ReadAllText(APIFileName);
 		SetApiKey(FAPIKey);
 	end;
 
@@ -229,9 +241,13 @@ end;
 
 destructor TOpenAI.Destroy;
 begin
+   FCompletions.Free;
 	FRESTResponse.Free;
 	FRESTRequest.Free;
 	FRESTClient.Free;
+	FCompletions := nil;
+	if Assigned(FEnginesList) then
+		FEnginesList.Free;
 	inherited Destroy;
 end;
 
@@ -239,7 +255,7 @@ procedure TOpenAI.HttpRequestError(Sender: TCustomRESTRequest);
 begin
 	FRESTRequest.FRequestType := orNone;
 	FStatusCode := FRESTRequest.Response.StatusCode;
-	FErrorMessage := 'Request error: ' + FRESTRequest.Response.StatusCode.ToString;
+	FErrorMessage := FRESTRequest.Response.ErrorMessage;
 	FOnError(Self);
 end;
 
@@ -284,10 +300,60 @@ var
 begin
 	Result := '';
 
-   JSonValue := TJSonObject.ParseJSONValue(FBodyContent);
-   JsonArray := JSonValue.GetValue<TJSONArray>('choices');
-   for ArrayElement in JsonArray do
-      Result := Result + ArrayElement.GetValue<String>('text');
+	JSonValue := TJSonObject.ParseJSONValue(FBodyContent);
+	JsonArray := JSonValue.GetValue<TJSONArray>('choices');
+	for ArrayElement in JsonArray do
+		Result := Result + ArrayElement.GetValue<String>('text');
+	JSonValue.Free;
+	JsonArray := nil;
+end;
+
+function TOpenAI.GetPersonChoicesResult: string;
+var
+  lJSonValue: TJSonValue;
+  lJsonArray: TJSONArray;
+  lArrayElement: TJSonValue;
+
+  lText: TStringList;
+  lNewTexto: string;
+  lPos: integer;
+  lFind: boolean;
+begin
+  Result := '';
+  lFind := False;
+  lJSonValue := TJSonObject.ParseJSONValue(FBodyContent);
+  lJsonArray := lJSonValue.GetValue<TJSONArray>('choices');
+  for lArrayElement in lJsonArray do
+    Result := Result + lArrayElement.GetValue<string>('text');
+
+  lText := TStringList.Create;
+  lText.Text := Result;
+  try
+    lNewTexto := '';
+    for var li := 0 to lText.Count - 1 do
+    begin
+      if (Pos(':',lText[li]) > 0) then
+      begin
+        if not lFind then
+          lFind := True
+        else
+          Break;
+      end;
+
+      if lFind then
+        lNewTexto := lNewTexto + sLineBreak + lText[li];
+    end;
+
+    lPos := Pos(':',lNewTexto);
+    lNewTexto:= Copy(lNewTexto,lPos+1,lNewTexto.Length);
+
+    if lNewTexto.Trim <> '' then
+      Result := lNewTexto;
+  finally
+	 lText.Free;
+	 lJSonValue.Free;
+	 lJsonArray := nil;
+  end;
 
 end;
 
@@ -374,7 +440,7 @@ end;
 
 procedure TOpenAI.SetAuthorization;
 begin
-   FRESTRequest.Params.Clear;
+	FRESTRequest.Params.Clear;
 	FRESTRequest.Params.AddHeader('Authorization', 'Bearer ' + FAPIKey);
 	FRESTRequest.Params.ParameterByName('Authorization').Options := [poDoNotEncode];
 end;
@@ -384,10 +450,10 @@ begin
 	FAPIKey := Value;
 end;
 
-procedure TOpenAI.SetCompletions(const Value: TCompletions);
+{procedure TOpenAI.SetCompletions(const Value: TCompletions);
 begin
 	FCompletions := Value;
-end;
+end;}
 
 procedure TOpenAI.Execute;
 begin
@@ -397,10 +463,40 @@ begin
 	end;
 end;
 
+procedure TOpenAI.ExecuteAsync(pProcEndExec: TProc; pProcError: TProc<string>);
+begin
+	TThread.CreateAnonymousThread(
+		procedure
+		begin
+			try
+				try
+					Execute;
+				except
+					on E: Exception do
+					begin
+						if Assigned(pProcError) then
+							TThread.Synchronize(nil,
+								procedure
+								begin
+									pProcError(E.Message);
+								end);
+					end;
+				end;
+			finally
+				if Assigned(pProcEndExec) then
+					TThread.Synchronize(nil,
+						procedure
+						begin
+							pProcEndExec;
+						end);
+			end;
+		end).Start;
+end;
+
 procedure TOpenAI.GetEngines;
 begin
 	Self.RequestType := orEngines;
-   SetAuthorization();
+	SetAuthorization();
 	FRESTRequest.ClearBody;
 	FRESTRequest.FRequestType := orEngines;
 	FRESTRequest.Method := TRESTRequestMethod.rmGET;
@@ -413,7 +509,7 @@ var
 	ABody: String;
 begin
 	Self.RequestType := orCompletions;
-   SetAuthorization();
+	SetAuthorization();
 	FRESTRequest.ClearBody;
 	FRESTRequest.Resource := OAI_GET_COMPLETION;
 	FRESTRequest.Method := TRESTRequestMethod.rmPOST;
@@ -424,11 +520,12 @@ end;
 
 procedure TOpenAI.Upload;
 begin
+	// WIP
 	SetAuthorization();
 	FRESTRequest.AddFile(FileDescription.Filename);
 	FRESTRequest.AddBody('', ctMULTIPART_FORM_DATA);
 	FRESTRequest.AddParameter('purpose', TFilePurposeName[Ord(FileDescription.Purpose)]);
-//	FRESTRequest.Execute;
+	// FRESTRequest.Execute;
 end;
 
 end.
