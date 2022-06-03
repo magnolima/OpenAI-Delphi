@@ -42,7 +42,6 @@ type
 type
 	TOpenAI = class
 	private
-		//
 		FAcceptType: String;
 		FContentType: String;
 		FEndpoint: String;
@@ -63,13 +62,12 @@ type
 		FMemtable: TFDMemTable;
 		FCompletions: TCompletions;
 		FStatusCode: Integer;
-    FFilePurpose: TFilePurpose;
+		FFilePurpose: TFilePurpose;
 		procedure readEngines;
 		procedure SetEndPoint(const Value: String);
 		procedure SetApiKey(const Value: string);
 		procedure SetOrganization(const Value: String);
 		procedure SetEngine(const Value: TOAIEngine);
-		//procedure SetCompletions(const Value: TCompletions);
 		procedure CreateRESTRespose;
 		procedure CreateRESTClient;
 		procedure CreateRESTRequest;
@@ -89,7 +87,7 @@ type
 		procedure Stop;
 		procedure GetEngines;
 		function GetChoicesResult: String;
-      function GetPersonChoicesResult: string;
+		function GetPersonChoicesResult: string;
 		procedure AfterExecute(Sender: TCustomRESTRequest);
 		procedure Upload;
 		property OnResponse: TNotifyEvent read FOnResponse write FOnResponse;
@@ -101,7 +99,6 @@ type
 		property APIKey: String read FAPIKey write SetApiKey;
 		property AvailableEngines: TDictionary<String, String> read FEnginesList;
 		property RequestType: TOAIRequests read FRequestType write FRequestType;
-		//property Completions: TCompletions write SetCompletions;
 		property Completions: TCompletions read FCompletions;
 		property BodyContent: String read FBodyContent;
 		property FileDescription: TFileDescription read FFileDescription write SetFileDescription;
@@ -241,7 +238,7 @@ end;
 
 destructor TOpenAI.Destroy;
 begin
-   FCompletions.Free;
+	FCompletions.Free;
 	FRESTResponse.Free;
 	FRESTRequest.Free;
 	FRESTClient.Free;
@@ -305,55 +302,53 @@ begin
 	for ArrayElement in JsonArray do
 		Result := Result + ArrayElement.GetValue<String>('text');
 	JSonValue.Free;
-	JsonArray := nil;
 end;
 
 function TOpenAI.GetPersonChoicesResult: string;
 var
-  lJSonValue: TJSonValue;
-  lJsonArray: TJSONArray;
-  lArrayElement: TJSonValue;
+	lJSonValue: TJSonValue;
+	lJsonArray: TJSONArray;
+	lArrayElement: TJSonValue;
 
-  lText: TStringList;
-  lNewTexto: string;
-  lPos: integer;
-  lFind: boolean;
+	lText: TStringList;
+	lNewTexto: string;
+	lPos: Integer;
+	lFind: boolean;
 begin
-  Result := '';
-  lFind := False;
-  lJSonValue := TJSonObject.ParseJSONValue(FBodyContent);
-  lJsonArray := lJSonValue.GetValue<TJSONArray>('choices');
-  for lArrayElement in lJsonArray do
-    Result := Result + lArrayElement.GetValue<string>('text');
+	Result := '';
+	lFind := False;
+	lJSonValue := TJSonObject.ParseJSONValue(FBodyContent);
+	lJsonArray := lJSonValue.GetValue<TJSONArray>('choices');
+	for lArrayElement in lJsonArray do
+		Result := Result + lArrayElement.GetValue<string>('text');
 
-  lText := TStringList.Create;
-  lText.Text := Result;
-  try
-    lNewTexto := '';
-    for var li := 0 to lText.Count - 1 do
-    begin
-      if (Pos(':',lText[li]) > 0) then
-      begin
-        if not lFind then
-          lFind := True
-        else
-          Break;
-      end;
+	lText := TStringList.Create;
+	lText.Text := Result;
+	try
+		lNewTexto := '';
+		for var li := 0 to lText.Count - 1 do
+		begin
+			if (Pos(':', lText[li]) > 0) then
+			begin
+				if not lFind then
+					lFind := True
+				else
+					Break;
+			end;
 
-      if lFind then
-        lNewTexto := lNewTexto + sLineBreak + lText[li];
-    end;
+			if lFind then
+				lNewTexto := lNewTexto + sLineBreak + lText[li];
+		end;
 
-    lPos := Pos(':',lNewTexto);
-    lNewTexto:= Copy(lNewTexto,lPos+1,lNewTexto.Length);
+		lPos := Pos(':', lNewTexto);
+		lNewTexto := Copy(lNewTexto, lPos + 1, lNewTexto.Length);
 
-    if lNewTexto.Trim <> '' then
-      Result := lNewTexto;
-  finally
-	 lText.Free;
-	 lJSonValue.Free;
-	 lJsonArray := nil;
-  end;
+		if lNewTexto.trim <> '' then
+			Result := lNewTexto;
+	finally
+		lText.Free;
+		lJSonValue.Free;
+	end;
 
 end;
 
@@ -449,11 +444,6 @@ procedure TOpenAI.SetApiKey(const Value: string);
 begin
 	FAPIKey := Value;
 end;
-
-{procedure TOpenAI.SetCompletions(const Value: TCompletions);
-begin
-	FCompletions := Value;
-end;}
 
 procedure TOpenAI.Execute;
 begin

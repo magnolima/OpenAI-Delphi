@@ -33,7 +33,7 @@ uses
 	Data.DB, FMX.Grid, FireDAC.Comp.DataSet, FireDAC.Comp.Client, FMX.ScrollBox,
 	FMX.Memo, FMX.Edit, Data.Bind.ObjectScope, REST.Client, REST.Response.Adapter,
 	FMX.Objects, FMX.TabControl, FMX.EditBox, FMX.NumberBox, FMX.Memo.Types,
-	REST.Types, System.Generics.Collections, 	MLOpenAI.Core,
+	REST.Types, System.Generics.Collections, MLOpenAI.Core,
 	MLOpenAI.Types, MLOpenAI.Completions;
 
 const
@@ -123,7 +123,7 @@ type
 		procedure InitCompletions;
 		procedure InitFile;
 		procedure OnOpenAIError(Sender: TObject);
-    procedure Submit;
+		procedure Submit;
 		{ Private declarations }
 	public
 		{ Public declarations }
@@ -136,13 +136,11 @@ var
 	EngineIndex: Integer;
 	NameOfEngines: TArray<String>;
 	FilePurpose: TFilePurpose;
-	//ACompletions: TCompletions;
 
 implementation
 
 uses
 	System.JSON;
-
 
 {$R *.fmx}
 
@@ -202,12 +200,12 @@ begin
 	FOpenAI.OnError := OnOpenAIError;
 	EngineIndex := Ord(FOpenAI.Engine);
 	FEngine := FOpenAI.Engine;
-	//ACompletions := TCompletions.Create(EngineIndex);
+	// ACompletions := TCompletions.Create(EngineIndex);
 end;
 
 procedure TfrmDemoOpenAI.FormDestroy(Sender: TObject);
 begin
-	//ACompletions.Free;
+	// ACompletions.Free;
 	FOpenAI.Free;
 end;
 
@@ -263,7 +261,7 @@ begin
 
 		// Let's sanitize this result for better readability
 		SanitizedResponse := TOpenAI.Sanitize(GetStops(Edit1.Text), FOpenAI.GetChoicesResult);
-      FOpenAI.SaveToFile('c:\temp\resposta.txt');
+		FOpenAI.SaveToFile('c:\temp\resposta.txt');
 		Memo2.Lines.Add(SanitizedResponse);
 		Memo2.Lines.Add(StringOfChar('-', 40));
 	end;
@@ -356,41 +354,16 @@ begin
 		ShowMessage('A prompt text must be supplied');
 		Exit;
 	end;
-  FOpenAI.Engine := FEngine;
-  FOpenAI.RequestType := orCompletions;
-  FOpenAI.Endpoint := OpenAI_PATH + '/engines/' + FEngine.ToString;
-  FOpenAI.Completions.MaxTokens := Round(nbMaxTokens.Value);
-  FOpenAI.Completions.SamplingTemperature := nbTemperature.Value;
-  FOpenAI.Completions.TopP := nbTopP.Value;
-  FOpenAI.Completions.Stop := GetStops(Edit1.Text);
-  FOpenAI.Completions.Prompt := sPrompt;
-  FOpenAI.Completions.LogProbabilities := -1; // -1 will set as null default
-  FOpenAI.Completions.User := 'Delphi-OpenAIDemo';
-{	ACompletions.MaxTokens := Round(nbMaxTokens.Value);
-	ACompletions.SamplingTemperature := nbTemperature.Value;
-	ACompletions.TopP := nbTopP.Value;
-	ACompletions.Stop := GetStops(Edit1.Text);
-	ACompletions.Prompt := sPrompt;
-	ACompletions.LogProbabilities := -1; // -1 will set as null default
-	ACompletions.User := 'Delphi-OpenAIDemo';
-
-	// Legacy engines were removed
-	case EngineIndex of
-		0:
-			OpenAI.Engine := TOAIEngine.egTextDavinci002;
-		1:
-			OpenAI.Engine := TOAIEngine.egTextDavinci001;
-		2:
-			OpenAI.Engine := TOAIEngine.egTextCurie001;
-		3:
-			OpenAI.Engine := TOAIEngine.egTextBabbage001;
-		4:
-			OpenAI.Engine := TOAIEngine.egTextAda001;
-	end;
-	OpenAI.Completions := ACompletions;
-	OpenAI.RequestType := orCompletions;
-	OpenAI.Endpoint := OpenAI_PATH + '/engines/' + NameOfEngines[EngineIndex];
-}
+	FOpenAI.Engine := FEngine;
+	FOpenAI.RequestType := orCompletions;
+	FOpenAI.Endpoint := OpenAI_PATH + '/engines/' + FEngine.ToString;
+	FOpenAI.Completions.MaxTokens := Round(nbMaxTokens.Value);
+	FOpenAI.Completions.SamplingTemperature := nbTemperature.Value;
+	FOpenAI.Completions.TopP := nbTopP.Value;
+	FOpenAI.Completions.Stop := GetStops(Edit1.Text);
+	FOpenAI.Completions.Prompt := sPrompt;
+	FOpenAI.Completions.LogProbabilities := -1; // -1 will set as null default
+	FOpenAI.Completions.User := 'Delphi-OpenAIDemo';
 end;
 
 procedure TfrmDemoOpenAI.InitFile;

@@ -203,8 +203,6 @@ begin
 		ABody := UTF8ToString(AJSONObject.ToJSON);
 
 	finally
-		if Assigned(JSONArray) then
-			JSONArray.Free;
 		AJSONObject.Free;
 		AJSONObject := nil;
 		JSONArray := nil;
