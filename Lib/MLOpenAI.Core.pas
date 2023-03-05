@@ -1,5 +1,5 @@
 ﻿(*
-  (C)2021-2022 Magno Lima - www.MagnumLabs.com.br - Version 1.0
+  (C)2021-2023 Magno Lima - www.MagnumLabs.com.br - Version 1.0
 
   Delphi libraries for using OpenAI's GPT-3 api
 
@@ -9,10 +9,9 @@
   You're allowed to distribute, remix, adapt, and build upon the material
   in any medium or format, with no conditions.
 
-  Feel free to open a push request if there's anything you want
-  to contribute.
+  Feel free if there's anything you want to contribute.
 
-  https://beta.openai.com/docs/api-reference/engines/retrieve
+  https://platform.openai.com/docs/api-reference/engines
 *)
 
 unit MLOpenAI.Core;
@@ -30,7 +29,8 @@ uses
 	Data.DB, FireDAC.Comp.DataSet, FireDAC.Comp.Client, System.Types,
 	System.IOUtils, System.TypInfo, System.JSON,
 	MLOpenAI.Types, MLOpenAI.Completions,
-	MLOpenAI.Files, MLOpenAI.Finetunes;
+	MLOpenAI.Files, MLOpenAI.Finetunes,
+	MLOpenAI.Images;
 
 type
 	TRESTRequestOAI = class(TRESTRequest)
@@ -63,6 +63,7 @@ type
 		FCompletions: TCompletions;
 		FStatusCode: Integer;
 		FFilePurpose: TFilePurpose;
+		FImages: TImages;
 		procedure readEngines;
 		procedure SetEndPoint(const Value: String);
 		procedure SetApiKey(const Value: string);
@@ -76,6 +77,8 @@ type
 		procedure HttpClientError(Sender: TCustomRESTClient);
 		procedure SetFileDescription(const Value: TFileDescription);
 		procedure SetAuthorization;
+		procedure ExecuteImages;
+		procedure readB64Json;
 	public
 		constructor Create(var MemTable: TFDMemTable; const APIFileName: String = '');
 		destructor Destroy; Override;
@@ -100,6 +103,7 @@ type
 		property AvailableEngines: TDictionary<String, String> read FEnginesList;
 		property RequestType: TOAIRequests read FRequestType write FRequestType;
 		property Completions: TCompletions read FCompletions;
+		property Images: TImages read FImages;
 		property BodyContent: String read FBodyContent;
 		property FileDescription: TFileDescription read FFileDescription write SetFileDescription;
 		property FilePurpose: TFilePurpose read FFilePurpose write FFilePurpose;
@@ -146,6 +150,8 @@ var
 	Temp, Stop: String;
 	Lines: TArray<String>;
 begin
+	if Text.IsEmpty then
+		Exit;
 
 	Temp := StringReplace(Text, #10#10, #13, [rfReplaceAll]);
 	for Stop in Stops do
@@ -224,6 +230,7 @@ begin
 	FOnResponse := nil;
 	FMemtable := MemTable;
 	FCompletions := TCompletions.Create(FEngine);
+	FImages := TImages.Create('DemoOpenAI');
 	CreateRESTRespose();
 	CreateRESTClient();
 	CreateRESTRequest();
@@ -239,6 +246,7 @@ end;
 destructor TOpenAI.Destroy;
 begin
 	FCompletions.Free;
+	FImages.Free;
 	FRESTResponse.Free;
 	FRESTRequest.Free;
 	FRESTClient.Free;
@@ -366,6 +374,13 @@ begin
 
 end;
 
+procedure TOpenAI.readB64Json;
+begin
+
+	Images.ImageB64Json := FBodyContent;
+
+end;
+
 procedure TOpenAI.AfterExecute(Sender: TCustomRESTRequest);
 var
 	LStatusCode: Integer;
@@ -395,6 +410,16 @@ begin
 			;
 		orFiles:
 			;
+		orImages:
+			begin
+				if (FRequestType = orImages) and (Images.ResponseFormat = TResponseFormat.rfB64Json) then
+				readB64Json();
+				FRESTRequest.FRequestType := orNone;
+				if Assigned(FOnResponse) then
+					FOnResponse(Self);
+				Exit;
+			end;
+
 	end;
 
 	if not FMemtable.IsEmpty then
@@ -426,6 +451,9 @@ begin
 			;
 		orFiles:
 			;
+		orImages:
+			if (FRequestType = orImages) and (Images.ResponseFormat = TResponseFormat.rfB64Json) then
+				readB64Json();
 	end;
 
 	FRESTRequest.FRequestType := orNone;
@@ -450,6 +478,8 @@ begin
 	case FRequestType of
 		orCompletions:
 			ExecuteCompletions();
+		orImages:
+			ExecuteImages();
 	end;
 end;
 
@@ -485,8 +515,8 @@ end;
 
 procedure TOpenAI.GetEngines;
 begin
-	Self.RequestType := orEngines;
 	SetAuthorization();
+	FRESTRequest.RequestType := orEngines;
 	FRESTRequest.ClearBody;
 	FRESTRequest.FRequestType := orEngines;
 	FRESTRequest.Method := TRESTRequestMethod.rmGET;
@@ -498,8 +528,8 @@ procedure TOpenAI.ExecuteCompletions;
 var
 	ABody: String;
 begin
-	Self.RequestType := orCompletions;
 	SetAuthorization();
+	FRESTRequest.RequestType := orCompletions;
 	FRESTRequest.ClearBody;
 	FRESTRequest.Resource := OAI_GET_COMPLETION;
 	FRESTRequest.Method := TRESTRequestMethod.rmPOST;
@@ -508,10 +538,25 @@ begin
 	FRESTRequest.Execute;
 end;
 
+procedure TOpenAI.ExecuteImages;
+var
+	ABody: String;
+begin
+	SetAuthorization();
+	FRESTRequest.RequestType := orImages;
+	FRESTRequest.ClearBody;
+	FRESTRequest.Resource := OAI_IMAGES;
+	FRESTRequest.Method := TRESTRequestMethod.rmPOST;
+	FImages.GenerateImages(ABody);
+	FRESTRequest.Body.Add(ABody, TRESTContentType.ctAPPLICATION_JSON);
+	FRESTRequest.Execute;
+end;
+
 procedure TOpenAI.Upload;
 begin
 	// WIP
 	SetAuthorization();
+	FRESTRequest.RequestType := orFiles;
 	FRESTRequest.AddFile(FileDescription.Filename);
 	FRESTRequest.AddBody('', ctMULTIPART_FORM_DATA);
 	FRESTRequest.AddParameter('purpose', TFilePurposeName[Ord(FileDescription.Purpose)]);

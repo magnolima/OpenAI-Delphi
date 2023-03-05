@@ -1,7 +1,9 @@
 # OpenAI-Delphi
 **A simple wrapper for the GPT-3 OpenAI API using Delphi.**
 
-2020-06-03 - Small fix
+2023-04-03 - Added Images (DALL-E) and Chat (ChatGPT)
+
+**The lack of time is keeping this project updated.**
 
 This library should wrapper all the API requests. All the returning data will be translated into a memory table/dataset for easly of handling.
 
@@ -13,8 +15,12 @@ We are going to cover the following requests:
 4. Classifications
 5. Answers
 6. Files
+7. Images ✓
+8. Chat ✓
 
-**IMPORTANT**: to use GPT-3 you'll need to have your own API key. Please go to https://beta.openai.com/ and request yours.
+The demo provided still doesn't have the Chat API yet, so follow the lib, it's a bit similar the Completions.
+
+**IMPORTANT**: to use GPT-3 you'll need to have your own API key. Please go to https://www.openai.com/.
 
 Understand that I am not an AI (even GPT-3) expert. This work was done so I could learn about. Please follow the OpenAI documentation for doubts. Eventually Not all the features/attributes could be available througout the requests.
 

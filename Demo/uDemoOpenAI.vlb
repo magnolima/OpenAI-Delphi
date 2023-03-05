@@ -11,7 +11,7 @@ Coordinates=99,77,77,33
 Coordinates=270,80,84,51
 
 []
-Coordinates=170,78,49,51
+Coordinates=504,232,49,51
 Visible=True
 
 [BindingsList1]
@@ -49,9 +49,6 @@ Coordinates=394,251,46,51
 
 [rbTextBabbage001]
 Coordinates=19,205,106,33
-
-[Memo2]
-Coordinates=504,232,49,51
 
 [Panel1]
 Coordinates=366,365,47,33

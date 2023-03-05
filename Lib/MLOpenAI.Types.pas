@@ -1,5 +1,5 @@
 (*
-  (C)2021-2022 Magno Lima - www.MagnumLabs.com.br - Version 1.0
+  (C)2021-2023 Magno Lima - www.MagnumLabs.com.br - Version 1.0
 
   Delphi libraries for using OpenAI's GPT-3 api
 
@@ -9,44 +9,54 @@
   You're allowed to distribute, remix, adapt, and build upon the material
   in any medium or format, with no conditions.
 
-  Feel free to open a push request if there's anything you want
-  to contribute.
+  Feel free if there's anything you want to contribute.
 *)
-
+{$DEFINE USE_ALL_ENGINES}
 unit MLOpenAi.Types;
 
 interface
 
 const
-	OAI_ENDPOINT = 'https://api.openai.com/v1';
-	OAI_GET_ENGINES = '/engines';
-	OAI_GET_COMPLETION = '/completions';
-	OAI_SEARCH = '/search';
-	OAI_CLASSIFICATIONS = '/classifications';
-	OAI_ANSWER = '/answers';
-	OAI_FILES = '/files';
-	OAI_FINETUNES = '/fine-tunes';
-	TOAIEngineName: TArray<String> = ['text-davinci-002', 'text-davinci-001', 'text-curie-001', 'text-babbage-001', 'text-ada-001',
-	  'davinci', 'curie', 'babbage', 'ada'];
-	TFilePurposeName: TArray<String> = ['answer', 'search', 'classification', 'finetune'];
+   OAI_ENDPOINT = 'https://api.openai.com/v1';
+   OAI_GET_ENGINES = '/engines';
+   OAI_GET_COMPLETION = '/completions';
+   OAI_GET_CHAT = '/chat';
+   OAI_SEARCH = '/search';
+   OAI_CLASSIFICATIONS = '/classifications';
+   OAI_ANSWER = '/answers';
+   OAI_FILES = '/files';
+   OAI_FINETUNES = '/fine-tunes';
+   OAI_IMAGES = '/images/generations';
+   TFilePurposeName: TArray<String> = ['answer', 'search', 'classification', 'finetune'];
+   TOAI_CHAT_MODEL: TArray<String> = ['gpt-3.5-turbo', 'gpt-3.5-turbo-0301'];
+{$IFDEF USE_ALL_ENGINES}
+   TOAIEngineName: TArray<String> = ['gpt-3.5-turbo', 'text-davinci-003', 'text-davinci-002', 'code-davinci-002', 'text-davinci-001',
+     'text-curie-001', 'text-babbage-001', 'text-ada-001'];
+{$ELSE}
+   TOAIEngineName: TArray<String> = ['gpt-3.5-turbo', 'text-davinci-003', 'text-davinci-002', 'code-davinci-002'];
+{$ENDIF}
 
 type
+{$IFDEF USE_ALL_ENGINES}
+   TOAIEngine = (egGPT3_5Turbo = 0, egTextDavinci003 = 1, egTextDavinci002 = 2, egCodeDavinci002 = 3, egTextDavinci001 = 4,
+     egTextCurie001 = 5, egTextBabbage001 = 6, egTextAda001 = 7);
+{$ELSE}
+   TOAIEngine = (egGPT3_5Turbo = 0, egTextDavinci003 = 1, egTextDavinci002 = 2, egCodeDavinci002 = 3);
+{$ENDIF}
+   TOAChatModel = (cmGPT3_5Turbo = 0, cmGPT3_5Turbo_0301 = 1);
 
-	TOAIEngine = (egTextDavinci002 = 0, egTextDavinci001 = 1, egTextCurie001 = 2, egTextBabbage001 = 3, egTextAda001 = 4, egDavinci = 5,
-	  egCurie = 6, egBabbage = 7, egAda = 8);
+   TOAIEngineHelper = record Helper for TOAIEngine
+      function ToString: string;
+   end;
 
-	TOAIEngineHelper = record Helper for TOAIEngine
-		function ToString: string;
-	end;
+   TOAIRequests = (orNone, rAuth, orEngines, orCompletions, orSearch, rClassifications, orAnswers, orFiles, orFinetunes, orImages, orChat);
+   TFilePurpose = (fpAnswer = 0, fpSearch = 1, fpClassification = 2, fpFineTune = 3);
 
-	TOAIRequests = (orNone, rAuth, orEngines, orCompletions, orSearch, rClassifications, orAnswers, orFiles, orFinetunes);
-	TFilePurpose = (fpAnswer = 0, fpSearch = 1, fpClassification = 2, fpFineTune = 3);
-
-	TFileDescription = record
-		Id: Integer;
-		Filename: String;
-		Purpose: TFilePurpose;
-	end;
+   TFileDescription = record
+      Id: Integer;
+      Filename: String;
+      Purpose: TFilePurpose;
+   end;
 
 implementation
 
@@ -54,7 +64,7 @@ implementation
 
 function TOAIEngineHelper.ToString: string;
 begin
-	Result := TOAIEngineName[ord(Self)];
+   Result := TOAIEngineName[ord(Self)];
 end;
 
 end.

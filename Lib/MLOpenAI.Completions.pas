@@ -1,5 +1,5 @@
 (*
-  (C)2021-2022 Magno Lima - www.MagnumLabs.com.br - Version 1.0
+  (C)2021-2023 Magno Lima - www.MagnumLabs.com.br - Version 1.0
 
   Delphi libraries for using OpenAI's GPT-3 api
 
@@ -9,10 +9,9 @@
   You're allowed to distribute, remix, adapt, and build upon the material
   in any medium or format, with no conditions.
 
-  Feel free to open a push request if there's anything you want
-  to contribute.
+  Feel free if there's anything you want to contribute.
 
-  https://beta.openai.com/docs/api-reference/completions/create
+  https://platform.openai.com/docs/api-reference/chat
 *)
 
 unit MLOpenAI.Completions;
@@ -187,7 +186,7 @@ begin
 		begin
 			JSONArray := TJSONArray.Create;
 			for Stop in FStop do
-				JSONArray.Add(Stop);
+				if not Stop.IsEmpty then JSONArray.Add(Stop);
 			AJSONObject.AddPair(TJSONPair.Create('stop', JSONArray));
 		end;
 
