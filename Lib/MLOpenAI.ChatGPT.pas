@@ -156,7 +156,7 @@ begin
       // "model": "gpt-3.5-turbo",
       // "messages": [{"role": "user", "content": "Hello!"}]
 
-      Value := Format('[{"role": "%s", "content": "Hello!"}]', [FUserRole, FMessages]);
+      Value := Format('[{"role": "%s", "content": "%s"}]', [FUserRole, FMessages]);
 
       AJSONObject.AddPair(TJSONPair.Create('model', TOAI_CHAT_MODEL[Ord(FModel)]));
       AJSONObject.AddPair(TJSONPair.Create('messages', Value));

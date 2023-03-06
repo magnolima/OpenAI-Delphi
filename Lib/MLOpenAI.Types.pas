@@ -20,7 +20,7 @@ const
    OAI_ENDPOINT = 'https://api.openai.com/v1';
    OAI_GET_ENGINES = '/engines';
    OAI_GET_COMPLETION = '/completions';
-   OAI_GET_CHAT = '/chat';
+   OAI_GET_CHAT = '/chat/completions';
    OAI_SEARCH = '/search';
    OAI_CLASSIFICATIONS = '/classifications';
    OAI_ANSWER = '/answers';
