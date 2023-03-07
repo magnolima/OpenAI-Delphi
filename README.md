@@ -1,8 +1,8 @@
 # OpenAI-Delphi
 **A simple wrapper for the GPT-3 OpenAI API using Delphi.**
 
-**2023-05-03 - Fixes to ChatGPT. Something still broken, work in progress**
-2023-04-03 - Added Images (DALL-E) and Chat (ChatGPT)
+**2023-06-03 - Fixes to ChatGPT. Something still broken with the demo**
+
 
 **The lack of time is keeping this project updated.**
 

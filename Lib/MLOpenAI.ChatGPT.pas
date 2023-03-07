@@ -26,7 +26,7 @@ type
    TChatGPT = class
    private
       FModel: TOAChatModel;
-      FUserRole, FMessages: String;
+      FMessages: String;
       FMaxTokens: Integer;
       FSamplingTemperature: Single;
       FTopP: Single;
@@ -47,7 +47,6 @@ type
       procedure SetPresencePenalty(const Value: Single);
       procedure SetFrequencyPenalty(const Value: Single);
       procedure SetUser(const Value: String);
-      procedure SetUserRole(const Value: String);
    public
       constructor Create(AEngine: TOAIEngine);
       destructor Destroy; override;
@@ -62,7 +61,6 @@ type
       property FrequencyPenalty: Single read FFrequencyPenalty write SetFrequencyPenalty;
       property PresencePenalty: Single read FPresencePenalty write SetPresencePenalty;
       property User: String read FUser write SetUser;
-      property UserRole: String read FUserRole write SetUserRole;
       procedure AddStringParameter(const Name: String; Value: String);
       procedure CreateChat(var ABody: String);
    end;
@@ -116,11 +114,6 @@ begin
    FUser := Value;
 end;
 
-procedure TChatGPT.SetUserRole(const Value: String);
-begin
-   FUserRole := Value;
-end;
-
 procedure TChatGPT.SetModel(const Value: TOAChatModel);
 begin
    FModel := Value;
@@ -146,20 +139,19 @@ end;
 
 procedure TChatGPT.CreateChat(var ABody: String);
 var
-   AJSONObject: TJSONObject;
+   AJSONObject, AMSGObject: TJSONObject;
    JSONArray: TJSONArray;
    Value, Stop: String;
 begin
    AJSONObject := TJSONObject.Create;
-   JSONArray := nil;
+   AMSGObject := TJSONObject.Create;
+   JSONArray := TJSONArray.Create;
    try
-      // "model": "gpt-3.5-turbo",
-      // "messages": [{"role": "user", "content": "Hello!"}]
-
-      Value := Format('[{"role": "%s", "content": "%s"}]', [FUserRole, FMessages]);
-
-      AJSONObject.AddPair(TJSONPair.Create('model', TOAI_CHAT_MODEL[Ord(FModel)]));
-      AJSONObject.AddPair(TJSONPair.Create('messages', Value));
+      AJSONObject.AddPair('model', TOAI_CHAT_MODEL[Ord(Self.FModel)]);
+      AMSGObject.AddPair('role', 'user');
+      AMSGObject.AddPair('content', FMessages);
+      JSONArray.Add(AMSGObject);
+      AJSONObject.AddPair('messages', JSONArray);
       AJSONObject.AddPair(TJSONPair.Create('temperature', TJSONNumber.Create(Trunc(FSamplingTemperature * 100) / 100)));
       AJSONObject.AddPair(TJSONPair.Create('max_tokens', TJSONNumber.Create(FMaxTokens)));
       AJSONObject.AddPair(TJSONPair.Create('top_p', TJSONNumber.Create(FTopP)));
@@ -181,17 +173,12 @@ begin
          AJSONObject.AddPair(TJSONPair.Create('stop', JSONArray));
       end;
 
-      if FNumberOfCompletions <> 1 then
-         AJSONObject.AddPair(TJSONPair.Create('n', TJSONNumber.Create(FNumberOfCompletions)));
-
       ABody := UTF8ToString(AJSONObject.ToJSON);
-
    finally
       AJSONObject.Free;
       AJSONObject := nil;
       JSONArray := nil;
    end;
-
 end;
 
 destructor TChatGPT.Destroy;

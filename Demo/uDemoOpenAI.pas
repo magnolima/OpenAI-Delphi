@@ -470,6 +470,7 @@ begin
    FOpenAI.Engine := FEngine;
    FOpenAI.RequestType := orCompletions;
    FOpenAI.Endpoint := OpenAI_PATH + '/engines/' + FEngine.ToString;
+   //FOpenAI.Endpoint := OpenAI_PATH + '/completions/' + FEngine.ToString;
    FOpenAI.Completions.MaxTokens := Round(nbMaxTokens.value);
    FOpenAI.Completions.SamplingTemperature := nbTemperature.value;
    FOpenAI.Completions.TopP := nbTopP.value;
