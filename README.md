@@ -3,8 +3,7 @@
 
 **2023-06-03 - Fixes to ChatGPT. Something still broken with the demo**
 
-
-**The lack of time is keeping this project updated.**
+**The lack of time is keeping this project to be updated.**
 
 This library should wrapper all the API requests. All the returning data will be translated into a memory table/dataset for easly of handling.
 
