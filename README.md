@@ -40,6 +40,39 @@ begin
 end;
 ```
 
+Example on how to use ChatGPT:
+See: https://platform.openai.com/docs/guides/chat/introduction
+```delphi
+procedure TfrmDemoOpenAI.CreateChatGPT;
+begin
+   OpenAI.Engine := TOAIEngine.egGPT3_5Turbo;
+   OpenAI.RequestType := orChat;
+   
+   OpenAI.Chat.ClearMessages;
+
+   SendMessage('You are a helpful assistant.', TMessageRole.mrSystem);   
+   SendMessage('Who won the world series in 2020?', TMessageRole.mrUser);
+   SendMessage('The Los Angeles Dodgers won the World Series in 2020.', TMessageRole.mrAssistant);
+
+   TThread.CreateAnonymousThread(
+   procedure
+   begin
+	OpenAI.Execute;
+   end).Start;
+end;
+
+procedure TfrmDemoOpenAI.OnOpenAIResponse(Sender: TObject);
+var
+   lResponses: TArray<String>;
+   text: String;
+begin
+   lResponses := OpenAI.GetChatResult;
+   for texto in lResponses do
+      Memo1.lines.add(Texto + #13);
+   Memo1.lines.add('');
+end;
+```
+
 Example on how to create an completion:
 ```pascal
 procedure TfrmDemoOpenAI.CreateCompletions;
