@@ -80,7 +80,7 @@ type
       procedure SetAuthorization;
       procedure ExecuteImages;
       procedure readB64Json;
-    procedure ExecuteChat;
+      procedure ExecuteChat;
    public
       constructor Create(var MemTable: TFDMemTable; const APIFileName: String = '');
       destructor Destroy; Override;
@@ -92,6 +92,7 @@ type
       procedure Stop;
       procedure GetEngines;
       function GetChoicesResult: String;
+      function GetChatResult: TArray<String>;
       function GetPersonChoicesResult: string;
       procedure AfterExecute(Sender: TCustomRESTRequest);
       procedure Upload;
@@ -235,7 +236,7 @@ begin
 
    FChatGPT := TChatGPT.Create(TOAIEngine.egGPT3_5Turbo);
    FCompletions := TCompletions.Create(FEngine);
-   FImages := TImages.Create('DemoOpenAI');
+   FImages := TImages.Create('');
 
    CreateRESTRespose();
    CreateRESTClient();
@@ -303,6 +304,34 @@ begin
    FRESTRequest.FRequestType := orNone;
 end;
 
+function TOpenAI.GetChatResult: TArray<String>;
+var
+   JSonObject: TJSONObject;
+   JSonValue: TJSonValue;
+   JsonArray: TJSONArray;
+   ArrayElement: TJSonValue;
+   I: Integer;
+   s: string;
+begin
+
+   try
+      JSonValue := TJSONObject.ParseJSONValue(FBodyContent);
+      JsonArray := JSonValue.GetValue<TJSONArray>('choices');
+      SetLength(Result, JsonArray.Count);
+
+      I := 0;
+      for ArrayElement in JsonArray do
+      begin
+         Result[I] := Trim(TJSONObject(TJSONObject(ArrayElement).GetValue('message')).GetValue<String>('content'));
+         inc(I);
+      end;
+
+   finally
+      JSonValue.Free;
+   end;
+
+end;
+
 function TOpenAI.GetChoicesResult: String;
 var
    JSonValue: TJSonValue;
@@ -311,10 +340,10 @@ var
 begin
    Result := '';
 
-   JSonValue := TJSonObject.ParseJSONValue(FBodyContent);
+   JSonValue := TJSONObject.ParseJSONValue(FBodyContent);
    JsonArray := JSonValue.GetValue<TJSONArray>('choices');
    for ArrayElement in JsonArray do
-      Result := Result + ArrayElement.GetValue<String>('text');
+      Result := Result + ArrayElement.GetValue<String>('message');
    JSonValue.Free;
 end;
 
@@ -331,7 +360,7 @@ var
 begin
    Result := '';
    lFind := False;
-   lJSonValue := TJSonObject.ParseJSONValue(FBodyContent);
+   lJSonValue := TJSONObject.ParseJSONValue(FBodyContent);
    lJsonArray := lJSonValue.GetValue<TJSONArray>('choices');
    for lArrayElement in lJsonArray do
       Result := Result + lArrayElement.GetValue<string>('text');
@@ -586,5 +615,6 @@ begin
    FRESTRequest.AddParameter('purpose', TFilePurposeName[Ord(FileDescription.Purpose)]);
    // FRESTRequest.Execute;
 end;
+
 
 end.

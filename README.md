@@ -1,11 +1,11 @@
 # OpenAI-Delphi
 **A simple wrapper for the GPT-3 OpenAI API using Delphi.**
 
-**2023-06-03 - Fixes to ChatGPT. Something still broken with the demo**
-
-**The lack of time is keeping this project to be updated.**
+**2023-10-03 - Important fix to ChatGPT**
 
 This library should wrapper all the API requests. All the returning data will be translated into a memory table/dataset for easly of handling.
+
+The Demo included still doesn't have the ChatGPT part, it will be added to the next update.
 
 We are going to cover the following requests:
 
