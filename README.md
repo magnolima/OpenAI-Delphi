@@ -50,9 +50,9 @@ begin
    
    OpenAI.Chat.ClearMessages;
 
-   SendMessage('You are a helpful assistant.', TMessageRole.mrSystem);   
-   SendMessage('Who won the world series in 2020?', TMessageRole.mrUser);
-   SendMessage('The Los Angeles Dodgers won the World Series in 2020.', TMessageRole.mrAssistant);
+   OpenAI.Chat.AddMessage('You are a helpful assistant.', TMessageRole.mrSystem);   
+   OpenAI.Chat.AddMessage('Who won the world series in 2020?', TMessageRole.mrUser);
+   OpenAI.Chat.AddMessage('The Los Angeles Dodgers won the World Series in 2020.', TMessageRole.mrAssistant);
 
    TThread.CreateAnonymousThread(
    procedure
