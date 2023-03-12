@@ -254,6 +254,7 @@ destructor TOpenAI.Destroy;
 begin
    FCompletions.Free;
    FImages.Free;
+   FChatGPT.Free;
    FRESTResponse.Free;
    FRESTRequest.Free;
    FRESTClient.Free;

@@ -36,7 +36,8 @@ uses
    FMX.Objects, FMX.TabControl, FMX.EditBox, FMX.NumberBox, FMX.Memo.Types,
    REST.Types, System.Generics.Collections, FMX.ListBox, Skia, Skia.FMX,
    System.Net.URLClient, System.Net.HttpClient, System.Net.HttpClientComponent,
-   MLOpenAI.Types, MLOpenAI.Completions, MLOpenAI.Core, MLOpenAI.Images, MLOpenAI.Files;
+   MLOpenAI.Types, MLOpenAI.Completions, MLOpenAI.Core, MLOpenAI.Images,
+   MLOpenAI.Files, MLOpenAI.ChatGPT;
 
 const
    APIKey_Filename = '.\openai.key';
@@ -53,7 +54,7 @@ type
       SpeedButton2: TSpeedButton;
       Label1: TLabel;
       SpeedButton3: TSpeedButton;
-      Button1: TButton;
+      btSubmit: TButton;
       Label2: TLabel;
       Panel1: TPanel;
       AniIndicator1: TAniIndicator;
@@ -73,10 +74,10 @@ type
       RESTClient1: TRESTClient;
       RESTRequest1: TRESTRequest;
       RESTResponse1: TRESTResponse;
-      Button2: TButton;
+      btClear: TButton;
       SpeedButton4: TSpeedButton;
       Label9: TLabel;
-      Button3: TButton;
+      btOpenFile: TButton;
       OpenDialog1: TOpenDialog;
       RadioButton1: TRadioButton;
       RadioButton2: TRadioButton;
@@ -114,21 +115,25 @@ type
       sbNextImage: TSpeedButton;
       sbPrevImage: TSpeedButton;
       Splitter1: TSplitter;
-    RadioButton5: TRadioButton;
+      SpeedButton5: TSpeedButton;
+      PanelChatGPT: TPanel;
+      RadioButton6: TRadioButton;
+      RadioButton7: TRadioButton;
+      RadioButton8: TRadioButton;
+      BtAddMessage: TButton;
       procedure FormCreate(Sender: TObject);
       procedure FormDestroy(Sender: TObject);
       procedure SpeedButton1Click(Sender: TObject);
       procedure SpeedButton2Click(Sender: TObject);
-      procedure Button1Click(Sender: TObject);
+      procedure btSubmitClick(Sender: TObject);
       procedure SpeedButton3Click(Sender: TObject);
-      procedure rbEngineSelect(Sender: TObject);
       procedure FormShow(Sender: TObject);
-      procedure Button2Click(Sender: TObject);
+      procedure btClearClick(Sender: TObject);
       procedure SpeedButton4Click(Sender: TObject);
       procedure RadioButton1Click(Sender: TObject);
       procedure RadioButton2Change(Sender: TObject);
       procedure RadioButton3Change(Sender: TObject);
-      procedure Button3Click(Sender: TObject);
+      procedure btOpenFileClick(Sender: TObject);
       procedure RadioButton4Change(Sender: TObject);
       procedure nbMaxTokensChange(Sender: TObject);
       procedure nbTemperatureChange(Sender: TObject);
@@ -139,6 +144,10 @@ type
       procedure sbPrevImageClick(Sender: TObject);
       procedure sbNextImageClick(Sender: TObject);
       procedure tbNumberOfImagesChange(Sender: TObject);
+      procedure SpeedButton5Click(Sender: TObject);
+      procedure BtAddMessageClick(Sender: TObject);
+      procedure RadioButton6Change(Sender: TObject);
+      procedure rbTextDavinci002Click(Sender: TObject);
    private
       FEngine: TOAIEngine;
       FOpenAI: TOpenAI;
@@ -149,6 +158,7 @@ type
       procedure InitImages;
       procedure LoadImage(const filename: string);
       procedure DownloadImage(const uri: string);
+      procedure InitChatGPT;
       { Private declarations }
    public
       { Public declarations }
@@ -158,6 +168,7 @@ type
 var
    frmDemoOpenAI: TfrmDemoOpenAI;
    OpenAIKey: String;
+   MessageRole: TMessageRole;
    EngineIndex: Integer;
    NameOfEngines: TArray<String>;
    FilePurpose: TFilePurpose;
@@ -232,7 +243,7 @@ begin
    FOpenAI := TOpenAI.Create(FDMemTable1, APIKey_Filename);
 
    FOpenAI.Endpoint := OpenAI_PATH;
-   FOpenAI.Engine := TOAIEngine.egTextCurie001;
+   FOpenAI.Engine := TOAIEngine.egTextDavinci003;
    FOpenAI.OnResponse := OnOpenAIResponse;
    FOpenAI.OnError := OnOpenAIError;
    EngineIndex := Ord(FOpenAI.Engine);
@@ -244,16 +255,15 @@ end;
 
 procedure TfrmDemoOpenAI.FormDestroy(Sender: TObject);
 begin
-   // ACompletions.Free;
    FOpenAI.Free;
 end;
 
-procedure TfrmDemoOpenAI.Button2Click(Sender: TObject);
+procedure TfrmDemoOpenAI.btClearClick(Sender: TObject);
 begin
    Memo2.Lines.Clear;
 end;
 
-procedure TfrmDemoOpenAI.Button3Click(Sender: TObject);
+procedure TfrmDemoOpenAI.btOpenFileClick(Sender: TObject);
 var
    AFileDescription: TFileDescription;
 begin
@@ -265,6 +275,22 @@ begin
       FOpenAI.FileDescription := AFileDescription;
       FOpenAI.Upload;
    end;
+end;
+
+procedure TfrmDemoOpenAI.BtAddMessageClick(Sender: TObject);
+var
+   lRole: TMessageRole;
+   I: Integer;
+begin
+   if (FOpenAI.RequestType = orImages) and (Memo3.Text.IsEmpty) then
+      exit;
+
+   Memo2.Lines.Clear;
+   FOpenAI.Chat.AddMessage(Memo1.Lines.Text, MessageRole);
+   for I := 0 to FOpenAI.Chat.Messages.Count - 1 do
+      Memo2.Lines.Add('role: "' + FOpenAI.Chat.Messages.KeyNames[I] + '", content: "' + FOpenAI.Chat.Messages.Values
+        [FOpenAI.Chat.Messages.KeyNames[I]] + '"');
+   Memo1.Lines.Clear;
 end;
 
 procedure TfrmDemoOpenAI.FormShow(Sender: TObject);
@@ -285,10 +311,28 @@ procedure TfrmDemoOpenAI.OnOpenAIResponse(Sender: TObject);
 var
    field: TField;
    Engine: TPair<string, string>;
-   tmp, SanitizedResponse: String;
+   Text, SanitizedResponse: String;
+   responses: TArray<String>;
 begin
-   Button1.Enabled := true;
+
+   btSubmit.Enabled := true;
    AniIndicator1.Enabled := False;
+
+   if FOpenAI.RequestType = TOAIRequests.orChat then
+   begin
+      responses := FOpenAI.GetChatResult;
+      FDMemTable1.Open;
+      while not FDMemTable1.Eof do
+      begin
+         Memo2.Lines.Add('tem coisa');
+         FDMemTable1.Next;
+      end;
+
+      for Text in responses do
+         Memo2.Lines.Add('> ' + Text + #13);
+      Memo2.Lines.Add('');
+      exit;
+   end;
 
    // We can get the response directly using GetChoicesResult property as text
    // or, we can read from the memtable
@@ -317,10 +361,10 @@ begin
          begin
             if field.AsString.Contains('url') then
             begin
-               tmp := field.AsString;
-               tmp := Copy(tmp, Pos('"url":"', tmp) + 7);
+               Text := field.AsString;
+               Text := Copy(Text, Pos('"url":"', Text) + 7);
                Memo2.Lines.Add('Downloading image, wait');
-               DownloadImage(tmp);
+               DownloadImage(Text);
             end;
          end
       end;
@@ -377,7 +421,19 @@ begin
    FilePurpose := TFilePurpose.fpFineTune;
 end;
 
-procedure TfrmDemoOpenAI.rbEngineSelect(Sender: TObject);
+procedure TfrmDemoOpenAI.RadioButton6Change(Sender: TObject);
+begin
+   case (Sender as TRadioButton).Tag of
+      0:
+         MessageRole := TMessageRole.mrUser;
+      1:
+         MessageRole := TMessageRole.mrAssistant;
+      2:
+         MessageRole := TMessageRole.mrSystem;
+   end;
+end;
+
+procedure TfrmDemoOpenAI.rbTextDavinci002Click(Sender: TObject);
 begin
    EngineIndex := (Sender as TRadioButton).Tag;
 
@@ -397,6 +453,8 @@ end;
 procedure TfrmDemoOpenAI.SpeedButton2Click(Sender: TObject);
 begin
    Label2.Text := 'Completions';
+   PanelChatGPT.Visible := False;
+   BtAddMessage.Visible := False;
    FOpenAI.RequestType := orCompletions;
    TabControl1.TabIndex := 1;
 end;
@@ -414,6 +472,17 @@ begin
    Label2.Text := 'Files';
    TabControl1.TabIndex := 3;
    FOpenAI.RequestType := orFiles;
+end;
+
+procedure TfrmDemoOpenAI.SpeedButton5Click(Sender: TObject);
+begin
+   Label2.Text := 'ChatGPT';
+   lbEngine.Text := 'Engine: gpt-3.5-turbo';
+   PanelChatGPT.Visible := true;
+   BtAddMessage.Visible := True;
+   FOpenAI.RequestType := orChat;
+   MessageRole := TMessageRole.mrUser;
+   TabControl1.TabIndex := 1;
 end;
 
 procedure TfrmDemoOpenAI.sbNextImageClick(Sender: TObject);
@@ -455,6 +524,23 @@ begin
    end;
 end;
 
+procedure TfrmDemoOpenAI.InitChatGPT;
+begin
+
+   if FOpenAI.Chat.Messages.Count = 0 then
+   begin
+      ShowMessage('A prompt text must be supplied');
+      exit;
+   end;
+   FOpenAI.Engine := TOAIEngine.egGPT3_5Turbo;
+   FOpenAI.RequestType := orChat;
+   FOpenAI.Endpoint := OAI_ENDPOINT;
+   FOpenAI.Chat.MaxTokens := 1024;
+   FOpenAI.Chat.TopP := 1;
+   FOpenAI.Chat.Temperature := 0.7;
+   FOpenAI.Chat.Model := cmGPT3_5Turbo;
+end;
+
 procedure TfrmDemoOpenAI.InitCompletions;
 var
    sPrompt: String;
@@ -470,7 +556,6 @@ begin
    FOpenAI.Engine := FEngine;
    FOpenAI.RequestType := orCompletions;
    FOpenAI.Endpoint := OpenAI_PATH + '/engines/' + FEngine.ToString;
-   //FOpenAI.Endpoint := OpenAI_PATH + '/completions/' + FEngine.ToString;
    FOpenAI.Completions.MaxTokens := Round(nbMaxTokens.value);
    FOpenAI.Completions.SamplingTemperature := nbTemperature.value;
    FOpenAI.Completions.TopP := nbTopP.value;
@@ -509,7 +594,7 @@ procedure TfrmDemoOpenAI.NetHTTPClient1ReceiveData(const Sender: TObject; AConte
 begin
    if AContentLength > 0 then
    begin
-      AniIndicator1.visible := true;
+      AniIndicator1.Visible := true;
       AniIndicator1.Enabled := true;
       FContentLength := true;
    end;
@@ -524,7 +609,7 @@ begin
       procedure
       begin
          AniIndicator1.Enabled := true;
-         AniIndicator1.visible := true;
+         AniIndicator1.Visible := true;
          lImageFileName := TImages.ExtractImageFileName(uri);
          FImageFileName := FRootDir + 'images\' + lImageFileName.filename;
          DeleteFile(FImageFileName);
@@ -561,12 +646,12 @@ begin
 
    FContentLength := False;
 
-   AniIndicator1.visible := False;
+   AniIndicator1.Visible := False;
    AniIndicator1.Enabled := False;
 
 end;
 
-procedure TfrmDemoOpenAI.Button1Click(Sender: TObject);
+procedure TfrmDemoOpenAI.btSubmitClick(Sender: TObject);
 begin
    Submit;
 end;
@@ -576,12 +661,6 @@ begin
    if FOpenAI.APIKey.IsEmpty then
    begin
       Memo2.Lines.Add('API key is missing');
-      exit;
-   end;
-
-   if (FOpenAI.Engine = egGPT3_5Turbo) then
-   begin
-      Memo2.Text := 'ChatGPT demo isn''t implemented yet, however the Chat lib is ready!';
       exit;
    end;
 
@@ -597,6 +676,12 @@ begin
       exit;
    end;
 
+   if (FOpenAI.RequestType = orChat) and (FOpenAI.Chat.Messages.Count = 0) then
+   begin
+      Memo2.Lines.Add('Nothing to do here...');
+      exit;
+   end;
+
    if FOpenAI.RequestType = orNone then
    begin
       Memo2.Lines.Add('Choose a request type.');
@@ -606,9 +691,9 @@ begin
    if (FOpenAI.RequestType = orImages) and (Memo3.Text.IsEmpty) then
       exit;
 
-   Button1.Enabled := False;
+   btSubmit.Enabled := False;
    AniIndicator1.Enabled := true;
-   AniIndicator1.visible := true;
+   AniIndicator1.Visible := true;
 
    TThread.CreateAnonymousThread(
       procedure
@@ -622,6 +707,8 @@ begin
                      FOpenAI.GetEngines();
                      exit;
                   end;
+               orChat:
+                  InitChatGPT();
                orCompletions:
                   InitCompletions();
                orFiles:
@@ -641,9 +728,9 @@ begin
             end;
 
          finally
-            Button1.Enabled := true;
+            btSubmit.Enabled := true;
             AniIndicator1.Enabled := False;
-            AniIndicator1.visible := False;
+            AniIndicator1.Visible := False;
          end;
 
       end).Start;

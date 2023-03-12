@@ -2,8 +2,8 @@ object frmDemoOpenAI: TfrmDemoOpenAI
   Left = 0
   Top = 0
   Caption = 'Demo OpenAI - Generative Pre-trained Transformer 3 '
-  ClientHeight = 593
-  ClientWidth = 857
+  ClientHeight = 638
+  ClientWidth = 928
   FormFactor.Width = 320
   FormFactor.Height = 480
   FormFactor.Devices = [Desktop]
@@ -12,7 +12,7 @@ object frmDemoOpenAI: TfrmDemoOpenAI
   OnShow = FormShow
   DesignerMasterStyle = 0
   object ToolBar1: TToolBar
-    Size.Width = 857.000000000000000000
+    Size.Width = 928.000000000000000000
     Size.Height = 40.000000000000000000
     Size.PlatformDefault = False
     TabOrder = 0
@@ -35,7 +35,7 @@ object frmDemoOpenAI: TfrmDemoOpenAI
         'Given a prompt, the model will return one or more predicted comp' +
         'letions, and can also return the probabilities of alternative to' +
         'kens at each position.'
-      Position.X = 121.000000000000000000
+      Position.X = 242.000000000000000000
       Size.Width = 121.000000000000000000
       Size.Height = 40.000000000000000000
       Size.PlatformDefault = False
@@ -47,7 +47,7 @@ object frmDemoOpenAI: TfrmDemoOpenAI
     object SpeedButton3: TSpeedButton
       Align = Left
       ClipParent = True
-      Position.X = 242.000000000000000000
+      Position.X = 363.000000000000000000
       Size.Width = 121.000000000000000000
       Size.Height = 40.000000000000000000
       Size.PlatformDefault = False
@@ -464,7 +464,7 @@ object frmDemoOpenAI: TfrmDemoOpenAI
           FileName = 'E:\DEVELOPER\FONTES\OpenAi\Teste\Logo.png'
         end>
       Align = Right
-      Position.X = 632.000000000000000000
+      Position.X = 703.000000000000000000
       Size.Width = 225.000000000000000000
       Size.Height = 40.000000000000000000
       Size.PlatformDefault = False
@@ -472,7 +472,7 @@ object frmDemoOpenAI: TfrmDemoOpenAI
     object SpeedButton4: TSpeedButton
       Align = Left
       ClipParent = True
-      Position.X = 363.000000000000000000
+      Position.X = 484.000000000000000000
       Size.Width = 121.000000000000000000
       Size.Height = 40.000000000000000000
       Size.PlatformDefault = False
@@ -481,12 +481,24 @@ object frmDemoOpenAI: TfrmDemoOpenAI
       Text = 'Files'
       OnClick = SpeedButton4Click
     end
+    object SpeedButton5: TSpeedButton
+      Align = Left
+      ClipParent = True
+      Position.X = 121.000000000000000000
+      Size.Width = 121.000000000000000000
+      Size.Height = 40.000000000000000000
+      Size.PlatformDefault = False
+      ParentShowHint = False
+      ShowHint = True
+      Text = 'ChatGPT'
+      OnClick = SpeedButton5Click
+    end
   end
   object Panel1: TPanel
     Align = Top
     Position.Y = 40.000000000000000000
-    Size.Width = 857.000000000000000000
-    Size.Height = 222.000000000000000000
+    Size.Width = 928.000000000000000000
+    Size.Height = 227.000000000000000000
     Size.PlatformDefault = False
     TabOrder = 10
     object Label2: TLabel
@@ -497,7 +509,7 @@ object frmDemoOpenAI: TfrmDemoOpenAI
       Margins.Left = 4.000000000000000000
       Margins.Right = 4.000000000000000000
       Position.X = 4.000000000000000000
-      Size.Width = 849.000000000000000000
+      Size.Width = 920.000000000000000000
       Size.Height = 22.000000000000000000
       Size.PlatformDefault = False
       TextSettings.Font.Size = 16.000000000000000000
@@ -512,41 +524,41 @@ object frmDemoOpenAI: TfrmDemoOpenAI
       Margins.Top = 2.000000000000000000
       Position.X = 4.000000000000000000
       Position.Y = 24.000000000000000000
-      Size.Width = 853.000000000000000000
+      Size.Width = 924.000000000000000000
       Size.Height = 17.000000000000000000
       Size.PlatformDefault = False
       TextSettings.Font.StyleExt = {00070000000000000004000000}
       Text = 'Parameteres'
       TabOrder = 2
     end
-    object Button1: TButton
-      Position.X = 8.000000000000000000
-      Position.Y = 188.000000000000000000
+    object btSubmit: TButton
+      Position.X = 728.000000000000000000
+      Position.Y = 190.000000000000000000
       Size.Width = 80.000000000000000000
       Size.Height = 30.000000000000000000
       Size.PlatformDefault = False
-      TabOrder = 4
+      TabOrder = 5
       Text = 'Submit'
-      OnClick = Button1Click
+      OnClick = btSubmitClick
     end
     object TabControl1: TTabControl
       Align = Top
       Position.Y = 60.000000000000000000
-      Size.Width = 857.000000000000000000
-      Size.Height = 125.000000000000000000
+      Size.Width = 928.000000000000000000
+      Size.Height = 122.000000000000000000
       Size.PlatformDefault = False
       TabIndex = 0
-      TabOrder = 5
+      TabOrder = 6
       TabPosition = None
       Sizes = (
-        857s
-        125s
-        857s
-        125s
-        857s
-        125s
-        857s
-        125s)
+        928s
+        122s
+        928s
+        122s
+        928s
+        122s
+        928s
+        122s)
       object TabItem1: TTabItem
         CustomIcon = <
           item
@@ -564,8 +576,8 @@ object frmDemoOpenAI: TfrmDemoOpenAI
           Tag = 7
           StyledSettings = [Family, Size]
           GroupName = 'Engine'
-          Position.X = 329.000000000000000000
-          Position.Y = 49.000000000000000000
+          Position.X = 457.000000000000000000
+          Position.Y = 32.000000000000000000
           Size.Width = 105.000000000000000000
           Size.Height = 19.000000000000000000
           Size.PlatformDefault = False
@@ -573,29 +585,29 @@ object frmDemoOpenAI: TfrmDemoOpenAI
           Text = 'Ada (fastest)'
           TextSettings.Font.StyleExt = {00070000000000000004000000}
           TextSettings.FontColor = claFirebrick
-          OnClick = rbEngineSelect
+          OnClick = rbTextDavinci002Click
         end
         object rbTextDavinci001: TRadioButton
           Tag = 2
           StyledSettings = [Family, Size]
           GroupName = 'Engine'
-          Position.X = 329.000000000000000000
-          Position.Y = 17.000000000000000000
+          Position.X = 185.000000000000000000
+          Position.Y = 33.000000000000000000
           Size.Width = 96.000000000000000000
           Size.Height = 19.000000000000000000
           Size.PlatformDefault = False
-          TabOrder = 5
+          TabOrder = 4
           Text = 'Davinci'
           TextSettings.Font.StyleExt = {00070000000000000004000000}
           TextSettings.FontColor = claFirebrick
-          OnClick = rbEngineSelect
+          OnClick = rbTextDavinci002Click
         end
         object rbTextCurie001: TRadioButton
           Tag = 5
           StyledSettings = [Family, Size]
           GroupName = 'Engine'
-          Position.X = 17.000000000000000000
-          Position.Y = 49.000000000000000000
+          Position.X = 273.000000000000000000
+          Position.Y = 33.000000000000000000
           Size.Width = 72.000000000000000000
           Size.Height = 19.000000000000000000
           Size.PlatformDefault = False
@@ -603,14 +615,14 @@ object frmDemoOpenAI: TfrmDemoOpenAI
           Text = 'Curie'
           TextSettings.Font.StyleExt = {00070000000000000004000000}
           TextSettings.FontColor = claFirebrick
-          OnClick = rbEngineSelect
+          OnClick = rbTextDavinci002Click
         end
         object rbTextBabbage001: TRadioButton
           Tag = 6
           StyledSettings = [Family, Size]
           GroupName = 'Engine'
-          Position.X = 145.000000000000000000
-          Position.Y = 49.000000000000000000
+          Position.X = 353.000000000000000000
+          Position.Y = 33.000000000000000000
           Size.Width = 104.000000000000000000
           Size.Height = 17.000000000000000000
           Size.PlatformDefault = False
@@ -618,38 +630,23 @@ object frmDemoOpenAI: TfrmDemoOpenAI
           Text = 'Babbage'
           TextSettings.Font.StyleExt = {00070000000000000004000000}
           TextSettings.FontColor = claFirebrick
-          OnClick = rbEngineSelect
+          OnClick = rbTextDavinci002Click
         end
         object rbTextDavinci002: TRadioButton
           Tag = 1
           StyledSettings = [Family, Size]
           GroupName = 'Engine'
           IsChecked = True
-          Position.X = 145.000000000000000000
-          Position.Y = 17.000000000000000000
+          Position.X = 17.000000000000000000
+          Position.Y = 33.000000000000000000
           Size.Width = 153.000000000000000000
           Size.Height = 19.000000000000000000
           Size.PlatformDefault = False
-          TabOrder = 4
+          TabOrder = 3
           Text = 'Davinci (InstructGPT)'
           TextSettings.Font.StyleExt = {00070000000000000004000000}
           TextSettings.FontColor = claFirebrick
-          OnClick = rbEngineSelect
-        end
-        object RadioButton5: TRadioButton
-          Enabled = False
-          StyledSettings = [Family, Size]
-          GroupName = 'Engine'
-          Position.X = 17.000000000000000000
-          Position.Y = 17.000000000000000000
-          Size.Width = 104.000000000000000000
-          Size.Height = 19.000000000000000000
-          Size.PlatformDefault = False
-          TabOrder = 3
-          Text = 'ChatGPT'
-          TextSettings.Font.StyleExt = {00070000000000000004000000}
-          TextSettings.FontColor = claFirebrick
-          OnClick = rbEngineSelect
+          OnClick = rbTextDavinci002Click
         end
       end
       object TabItem2: TTabItem
@@ -667,11 +664,10 @@ object frmDemoOpenAI: TfrmDemoOpenAI
         ExplicitSize.cy = 8.000000000000000000
         object Edit1: TEdit
           Touch.InteractiveGestures = [LongTap, DoubleTap]
-          Anchors = [akLeft, akTop, akRight]
           TabOrder = 10
           Position.X = 464.000000000000000000
           Position.Y = 24.000000000000000000
-          Size.Width = 387.000000000000000000
+          Size.Width = 174.000000000000000000
           Size.Height = 22.000000000000000000
           Size.PlatformDefault = False
         end
@@ -695,7 +691,7 @@ object frmDemoOpenAI: TfrmDemoOpenAI
           Position.X = 8.000000000000000000
           Position.Y = 24.000000000000000000
           TabOrder = 17
-          Value = 64.000000000000000000
+          Value = 1024.000000000000000000
           ParentShowHint = False
           ShowHint = False
           OnChange = nbMaxTokensChange
@@ -710,7 +706,7 @@ object frmDemoOpenAI: TfrmDemoOpenAI
           Size.PlatformDefault = False
           TextSettings.Font.Size = 11.000000000000000000
           TextSettings.HorzAlign = Center
-          Text = '64'
+          Text = '1024'
           TabOrder = 9
         end
         object nbTemperature: TTrackBar
@@ -721,7 +717,7 @@ object frmDemoOpenAI: TfrmDemoOpenAI
           Position.X = 120.000000000000000000
           Position.Y = 24.000000000000000000
           TabOrder = 18
-          Value = 0.899999976158142100
+          Value = 0.699999988079071000
           OnChange = nbTemperatureChange
         end
         object Label13: TLabel
@@ -734,7 +730,7 @@ object frmDemoOpenAI: TfrmDemoOpenAI
           Size.PlatformDefault = False
           TextSettings.Font.Size = 11.000000000000000000
           TextSettings.HorzAlign = Center
-          Text = '0,9'
+          Text = '0.7'
           TabOrder = 5
         end
         object nbTopP: TTrackBar
@@ -761,7 +757,7 @@ object frmDemoOpenAI: TfrmDemoOpenAI
           Size.PlatformDefault = False
           TextSettings.Font.Size = 11.000000000000000000
           TextSettings.HorzAlign = Center
-          Text = '1,0'
+          Text = '1'
           TabOrder = 3
         end
         object Label4: TLabel
@@ -817,7 +813,7 @@ object frmDemoOpenAI: TfrmDemoOpenAI
           Size.PlatformDefault = False
           TextSettings.Font.Size = 11.000000000000000000
           TextSettings.HorzAlign = Center
-          Text = '1,0'
+          Text = '0'
           TabOrder = 2
         end
         object Label7: TLabel
@@ -840,13 +836,55 @@ object frmDemoOpenAI: TfrmDemoOpenAI
           Margins.Right = 4.000000000000000000
           Margins.Bottom = 4.000000000000000000
           Position.X = 4.000000000000000000
-          Position.Y = 64.000000000000000000
-          Size.Width = 849.000000000000000000
+          Position.Y = 61.000000000000000000
+          Size.Width = 920.000000000000000000
           Size.Height = 57.000000000000000000
           Size.PlatformDefault = False
           TabOrder = 0
-          Viewport.Width = 845.000000000000000000
+          Viewport.Width = 916.000000000000000000
           Viewport.Height = 53.000000000000000000
+        end
+        object PanelChatGPT: TPanel
+          Anchors = [akLeft, akTop, akRight]
+          Position.X = 648.000000000000000000
+          Position.Y = 8.000000000000000000
+          Size.Width = 271.000000000000000000
+          Size.Height = 49.000000000000000000
+          Size.PlatformDefault = False
+          TabOrder = 19
+          object RadioButton6: TRadioButton
+            IsChecked = True
+            Position.X = 8.000000000000000000
+            Position.Y = 16.000000000000000000
+            Size.Width = 57.000000000000000000
+            Size.Height = 19.000000000000000000
+            Size.PlatformDefault = False
+            TabOrder = 2
+            Text = 'User'
+            OnChange = RadioButton6Change
+          end
+          object RadioButton7: TRadioButton
+            Tag = 1
+            Position.X = 88.000000000000000000
+            Position.Y = 16.000000000000000000
+            Size.Width = 81.000000000000000000
+            Size.Height = 19.000000000000000000
+            Size.PlatformDefault = False
+            TabOrder = 1
+            Text = 'Assistant'
+            OnChange = RadioButton6Change
+          end
+          object RadioButton8: TRadioButton
+            Tag = 2
+            Position.X = 192.000000000000000000
+            Position.Y = 16.000000000000000000
+            Size.Width = 73.000000000000000000
+            Size.Height = 19.000000000000000000
+            Size.PlatformDefault = False
+            TabOrder = 0
+            Text = 'System'
+            OnChange = RadioButton6Change
+          end
         end
       end
       object TabItem3: TTabItem
@@ -872,12 +910,12 @@ object frmDemoOpenAI: TfrmDemoOpenAI
           Margins.Right = 4.000000000000000000
           Margins.Bottom = 4.000000000000000000
           Position.X = 4.000000000000000000
-          Position.Y = 65.000000000000000000
-          Size.Width = 849.000000000000000000
+          Position.Y = 62.000000000000000000
+          Size.Width = 920.000000000000000000
           Size.Height = 56.000000000000000000
           Size.PlatformDefault = False
           TabOrder = 1
-          Viewport.Width = 845.000000000000000000
+          Viewport.Width = 916.000000000000000000
           Viewport.Height = 52.000000000000000000
         end
         object Label16: TLabel
@@ -932,7 +970,7 @@ object frmDemoOpenAI: TfrmDemoOpenAI
           Margins.Left = 4.000000000000000000
           Margins.Right = 4.000000000000000000
           Position.X = 4.000000000000000000
-          Size.Width = 849.000000000000000000
+          Size.Width = 920.000000000000000000
           Size.Height = 22.000000000000000000
           Size.PlatformDefault = False
           TextSettings.Font.Size = 16.000000000000000000
@@ -959,13 +997,13 @@ object frmDemoOpenAI: TfrmDemoOpenAI
           Anchors = [akLeft, akTop, akRight]
           Position.X = 347.000000000000000000
           Position.Y = 8.000000000000000000
-          Size.Width = 575.000000000000000000
+          Size.Width = 646.000000000000000000
           Size.Height = 17.000000000000000000
           Size.PlatformDefault = False
           Text = 'File'
           TabOrder = 2
         end
-        object Button3: TButton
+        object btOpenFile: TButton
           Position.X = 344.000000000000000000
           Position.Y = 31.000000000000000000
           Size.Width = 80.000000000000000000
@@ -973,10 +1011,9 @@ object frmDemoOpenAI: TfrmDemoOpenAI
           Size.PlatformDefault = False
           TabOrder = 7
           Text = 'Choose file'
-          OnClick = Button3Click
+          OnClick = btOpenFileClick
         end
         object RadioButton1: TRadioButton
-          IsChecked = True
           Position.X = 8.000000000000000000
           Position.Y = 34.000000000000000000
           Size.Width = 81.000000000000000000
@@ -1043,23 +1080,23 @@ object frmDemoOpenAI: TfrmDemoOpenAI
       Margins.Top = 2.000000000000000000
       Position.X = 4.000000000000000000
       Position.Y = 43.000000000000000000
-      Size.Width = 853.000000000000000000
+      Size.Width = 924.000000000000000000
       Size.Height = 17.000000000000000000
       Size.PlatformDefault = False
       TextSettings.Font.StyleExt = {00070000000000000004000000}
       Text = 'Prompt (max len 400 characters)'
       TabOrder = 1
     end
-    object Button2: TButton
+    object btClear: TButton
       Anchors = [akTop, akRight]
-      Position.X = 769.000000000000000000
-      Position.Y = 187.000000000000000000
+      Position.X = 840.000000000000000000
+      Position.Y = 190.000000000000000000
       Size.Width = 80.000000000000000000
       Size.Height = 30.000000000000000000
       Size.PlatformDefault = False
       TabOrder = 3
       Text = 'Clear'
-      OnClick = Button2Click
+      OnClick = btClearClick
     end
     object AniIndicator1: TAniIndicator
       Align = Center
@@ -1068,18 +1105,28 @@ object frmDemoOpenAI: TfrmDemoOpenAI
       Size.PlatformDefault = False
       Style = Circular
     end
+    object BtAddMessage: TButton
+      Position.X = 8.000000000000000000
+      Position.Y = 189.000000000000000000
+      Size.Width = 105.000000000000000000
+      Size.Height = 30.000000000000000000
+      Size.PlatformDefault = False
+      TabOrder = 4
+      Text = 'Add Message'
+      OnClick = BtAddMessageClick
+    end
   end
   object OpenDialog1: TOpenDialog
     Filter = 
       'JSON Lines file|*.jsonl|Compressed JSON Lines|*.jsonl.gz;*.jsonl' +
       '.bz2'
-    Left = 120
-    Top = 280
+    Left = 128
+    Top = 320
   end
   object ToolBar2: TToolBar
     Align = Bottom
-    Position.Y = 553.000000000000000000
-    Size.Width = 857.000000000000000000
+    Position.Y = 598.000000000000000000
+    Size.Width = 928.000000000000000000
     Size.Height = 40.000000000000000000
     Size.PlatformDefault = False
     TabOrder = 30
@@ -1089,7 +1136,7 @@ object frmDemoOpenAI: TfrmDemoOpenAI
       Margins.Top = 4.000000000000000000
       Margins.Right = 8.000000000000000000
       Margins.Bottom = 4.000000000000000000
-      Size.Width = 841.000000000000000000
+      Size.Width = 912.000000000000000000
       Size.Height = 32.000000000000000000
       Size.PlatformDefault = False
       TabOrder = 0
@@ -1097,8 +1144,8 @@ object frmDemoOpenAI: TfrmDemoOpenAI
   end
   object Panel2: TPanel
     Align = Client
-    Size.Width = 857.000000000000000000
-    Size.Height = 291.000000000000000000
+    Size.Width = 928.000000000000000000
+    Size.Height = 331.000000000000000000
     Size.PlatformDefault = False
     TabOrder = 39
     object Memo2: TMemo
@@ -1106,18 +1153,18 @@ object frmDemoOpenAI: TfrmDemoOpenAI
       DataDetectorTypes = []
       TextSettings.WordWrap = True
       Align = Client
-      Size.Width = 479.000000000000000000
-      Size.Height = 291.000000000000000000
+      Size.Width = 550.000000000000000000
+      Size.Height = 331.000000000000000000
       Size.PlatformDefault = False
       TabOrder = 14
-      Viewport.Width = 475.000000000000000000
-      Viewport.Height = 287.000000000000000000
+      Viewport.Width = 546.000000000000000000
+      Viewport.Height = 327.000000000000000000
     end
     object Panel3: TPanel
       Align = Right
-      Position.X = 488.000000000000000000
+      Position.X = 559.000000000000000000
       Size.Width = 369.000000000000000000
-      Size.Height = 291.000000000000000000
+      Size.Height = 331.000000000000000000
       Size.PlatformDefault = False
       TabOrder = 15
       object ImageDallE: TImage
@@ -1126,12 +1173,12 @@ object frmDemoOpenAI: TfrmDemoOpenAI
           end>
         Align = Client
         Size.Width = 369.000000000000000000
-        Size.Height = 256.000000000000000000
+        Size.Height = 296.000000000000000000
         Size.PlatformDefault = False
       end
       object Panel4: TPanel
         Align = Bottom
-        Position.Y = 256.000000000000000000
+        Position.Y = 296.000000000000000000
         Size.Width = 369.000000000000000000
         Size.Height = 35.000000000000000000
         Size.PlatformDefault = False
@@ -1159,9 +1206,9 @@ object frmDemoOpenAI: TfrmDemoOpenAI
       Align = Right
       Cursor = crHSplit
       MinSize = 20.000000000000000000
-      Position.X = 479.000000000000000000
+      Position.X = 550.000000000000000000
       Size.Width = 9.000000000000000000
-      Size.Height = 291.000000000000000000
+      Size.Height = 331.000000000000000000
       Size.PlatformDefault = False
     end
   end
@@ -1184,8 +1231,8 @@ object frmDemoOpenAI: TfrmDemoOpenAI
   object BindingsList1: TBindingsList
     Methods = <>
     OutputConverters = <>
-    Left = 32
-    Top = 280
+    Left = 24
+    Top = 304
   end
   object RESTRequest1: TRESTRequest
     Client = RESTClient1

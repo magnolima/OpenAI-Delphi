@@ -39,7 +39,6 @@ type
       FPresencePenalty: Single;
       FMessages: TStringList;
       FUser: String;
-      FUserParameters: TDictionary<String, String>;
       procedure SetMaxTokens(const Value: Integer);
       procedure SetModel(const Value: TOAChatModel);
       procedure SetSamplingTemperature(const Value: Single);
@@ -52,7 +51,6 @@ type
    public
       constructor Create(AEngine: TOAIEngine);
       destructor Destroy; override;
-      procedure AddStringParameter(const Name: String; Value: String);
       procedure AddMessage(const Text: String; const Role: TMessageRole);
       procedure ClearMessages;
       procedure CreateChat(var ABody: String);
@@ -66,6 +64,7 @@ type
       property FrequencyPenalty: Single read FFrequencyPenalty write SetFrequencyPenalty;
       property PresencePenalty: Single read FPresencePenalty write SetPresencePenalty;
       property User: String read FUser write SetUser;
+      property Messages: TStringList read FMessages;
    end;
 
 implementation
@@ -138,11 +137,6 @@ begin
    FMessages.AddPair(lRole, Text);
 end;
 
-procedure TChatGPT.AddStringParameter(const Name: String; Value: String);
-begin
-   FUserParameters.TryAdd(Name, Value);
-end;
-
 procedure TChatGPT.ClearMessages;
 begin
    FMessages.Clear;
@@ -156,7 +150,6 @@ begin
    Self.Temperature := 0.7;
    Self.FrequencyPenalty := 0.0;
    Self.PresencePenalty := 0.0;
-   FUserParameters := TDictionary<string, String>.Create;
    FMessages := TStringList.Create;
 end;
 
@@ -211,7 +204,6 @@ end;
 destructor TChatGPT.Destroy;
 begin
    FStop := nil;
-   FUserParameters.Free;
    FMessages.Free;
    inherited;
 end;

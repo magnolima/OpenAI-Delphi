@@ -38,9 +38,6 @@ Coordinates=644,56,74,33
 [Label3]
 Coordinates=148,173,46,51
 
-[Button1]
-Coordinates=30,77,53,51
-
 [TabItem1]
 Coordinates=425,365,59,33
 
@@ -79,4 +76,7 @@ Coordinates=504,155,46,51
 
 [Image1]
 Coordinates=39,269,49,51
+
+[btSubmit]
+Coordinates=30,77,53,51
 

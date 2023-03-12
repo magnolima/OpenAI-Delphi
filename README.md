@@ -1,11 +1,9 @@
 # OpenAI-Delphi
 **A simple wrapper for the GPT-3 OpenAI API using Delphi.**
 
-**2023-10-03 - Important fix to ChatGPT**
+**2023-10-03 - Demo is now working with ChatGPT**
 
 This library should wrapper all the API requests. All the returning data will be translated into a memory table/dataset for easly of handling.
-
-The Demo included still doesn't have the ChatGPT part, it will be added to the next update.
 
 We are going to cover the following requests:
 
@@ -74,7 +72,7 @@ end;
 ```
 
 Example on how to create an completion:
-```pascal
+```delphi
 procedure TfrmDemoOpenAI.CreateCompletions;
 var
    Completions: TCompletions;
